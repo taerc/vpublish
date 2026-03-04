@@ -1,0 +1,27 @@
+server:
+  port: 8080
+  mode: debug
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  host: 172.16.10.56
+  port: 3306
+  user: root
+  password: Zkfc@2024!
+  dbname: vpublish-test
+  max_open_conns: 100
+  max_idle_conns: 10
+
+jwt:
+  secret: www-fc-fm-token 
+  expire: 24h
+  refresh_expire: 168h
+
+storage:
+  type: local
+  path: ./uploads
+  max_file_size: 104857600 # 100MB
+
+log:
+  level: debug

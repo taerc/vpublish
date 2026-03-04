@@ -1,0 +1,1 @@
+import{d as e,b as a,p as i,g as t}from"./index-CnAyDjIN.js";const s={list:e=>t("/admin/categories",{params:e}),listActive:()=>t("/admin/categories/active"),get:e=>t(`/admin/categories/${e}`),create:e=>i("/admin/categories",e),update:(e,i)=>a(`/admin/categories/${e}`,i),delete:a=>e(`/admin/categories/${a}`)};export{s as c};

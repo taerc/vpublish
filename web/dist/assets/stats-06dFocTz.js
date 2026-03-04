@@ -1,0 +1,1 @@
+import{g as a}from"./index-CnAyDjIN.js";const s={overview:()=>a("/admin/stats/overview"),daily:s=>a("/admin/stats/daily",{params:s}),trend:s=>a("/admin/stats/trend",{params:s}),monthly:s=>a("/admin/stats/monthly",{params:s}),yearly:s=>a("/admin/stats/yearly",{params:s}),byCategory:s=>a("/admin/stats/category",{params:s})};export{s};
