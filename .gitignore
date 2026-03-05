@@ -28,6 +28,8 @@ go.work.sum
 .env
 uploads/
 dist/
+build/
+web/node_modules/
 
 # Editor/IDE
 # .idea/
