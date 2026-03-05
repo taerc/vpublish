@@ -248,6 +248,23 @@ func (h *PackageHandler) GetLatestByCategory(c *gin.Context) {
 		return
 	}
 
+	// 构建 package 信息（防止空指针）
+	packageInfo := gin.H{
+		"id":       version.PackageID,
+		"name":     "",
+		"category": nil,
+	}
+	if version.Package != nil {
+		packageInfo["name"] = version.Package.Name
+		if version.Package.Category != nil {
+			packageInfo["category"] = gin.H{
+				"id":   version.Package.Category.ID,
+				"name": version.Package.Category.Name,
+				"code": version.Package.Category.Code,
+			}
+		}
+	}
+
 	// 返回版本信息
 	resp := gin.H{
 		"id":            version.ID,
@@ -263,11 +280,7 @@ func (h *PackageHandler) GetLatestByCategory(c *gin.Context) {
 		"is_stable":     version.IsStable,
 		"download_url":  downloadURL,
 		"published_at":  version.PublishedAt,
-		"package": gin.H{
-			"id":       version.Package.ID,
-			"name":     version.Package.Name,
-			"category": version.Package.Category,
-		},
+		"package":       packageInfo,
 	}
 
 	response.Success(c, resp)
