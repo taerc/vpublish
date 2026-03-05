@@ -228,7 +228,7 @@ func TestPackageService_CreateWithVersion_PackageExists_DifferentVersion(t *test
 	if err == nil {
 		t.Error("second create with different version should fail (package already exists)")
 	}
-	if err != nil && err.Error() != "软件包已存在，请使用上传新版本接�? {
+	if err != nil && err.Error() != "软件包已存在，请使用上传新版本接口" {
 		t.Logf("got expected error: %v", err)
 	}
 	_ = pkg1
@@ -697,5 +697,45 @@ func TestPackageService_GetFilePath(t *testing.T) {
 
 	if !filepath.IsAbs(filePath) {
 		t.Errorf("file path should be absolute, got: %s", filePath)
+	}
+}
+
+func TestValidateVersionFormat(t *testing.T) {
+	tests := []struct {
+		version   string
+		wantError bool
+	}{
+		// 有效格式
+		{"v1.0.0", false},
+		{"V1.0.0", false},
+		{"1.0.0", false},
+		{"v01.00.00", false},
+		{"V10.20.30", false},
+		{" v1.0.0 ", false}, // 自动 trim
+
+		// 无效格式
+		{"v1.0", true},       // 只有2段
+		{"V1", true},         // 只有1段
+		{"x1.0.0", true},     // 错误前缀
+		{"1.0.0.0", true},    // 4段
+		{"v1.0.0-beta", true}, // 预发布标签
+		{"", true},           // 空字符串
+		{"abc", true},        // 非版本号
+		{"v1.0.0-rc1", true}, // 预发布标签
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.version, func(t *testing.T) {
+			err := validateVersionFormat(tt.version)
+			if tt.wantError {
+				if err == nil {
+					t.Errorf("validateVersionFormat(%q) expected error, got nil", tt.version)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("validateVersionFormat(%q) unexpected error: %v", tt.version, err)
+				}
+			}
+		})
 	}
 }

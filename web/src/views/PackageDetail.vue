@@ -188,7 +188,10 @@ const uploadForm = reactive({
 })
 
 const uploadRules: FormRules = {
-  version: [{ required: true, message: '请输入版本号', trigger: 'blur' }],
+  version: [
+    { required: true, message: '请输入版本号', trigger: 'blur' },
+    { pattern: /^(v|V)?\d+\.\d+\.\d+$/, message: '版本号格式必须为 v1.0.0 或 1.0.0', trigger: 'blur' }
+  ],
 }
 
 onMounted(() => {

@@ -205,7 +205,10 @@ const editForm = reactive({
 
 const rules: FormRules = {
   category_id: [{ required: true, message: '请选择类别', trigger: 'change' }],
-  version: [{ required: true, message: '请输入版本号', trigger: 'blur' }],
+  version: [
+    { required: true, message: '请输入版本号', trigger: 'blur' },
+    { pattern: /^(v|V)?\d+\.\d+\.\d+$/, message: '版本号格式必须为 v1.0.0 或 1.0.0', trigger: 'blur' }
+  ],
 }
 
 const editRules: FormRules = {

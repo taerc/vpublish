@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"errors"
+"errors"
+	"regexp"
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
@@ -20,9 +21,24 @@ var (
 	ErrPackageNotFound      = errors.New("package not found")
 	ErrVersionNotFound      = errors.New("version not found")
 	ErrVersionAlreadyExists = errors.New("version already exists")
-	ErrInvalidVersionFormat = errors.New("invalid version format")
+	ErrInvalidVersionFormat = errors.New("版本号格式必须为 v1.0.0 或 1.0.0")
 	ErrVersionMustBeGreater = errors.New("新版本号必须大于已有版本号")
 )
+
+// versionRegex 版本号格式正则表达式
+// 允许格式: v1.0.0, V1.0.0, 1.0.0
+var versionRegex = regexp.MustCompile(`^(v|V)?\d+\.\d+\.\d+$`)
+
+// validateVersionFormat 校验版本号格式
+// 允许格式: v1.0.0, V1.0.0, 1.0.0
+// 必须为三段数字，可选 v/V 前缀
+func validateVersionFormat(version string) error {
+	version = strings.TrimSpace(version)
+	if !versionRegex.MatchString(version) {
+		return ErrInvalidVersionFormat
+	}
+	return nil
+}
 
 type PackageService struct {
 	packageRepo  *repository.PackageRepository
@@ -95,6 +111,11 @@ func (s *PackageService) CreateWithVersion(
 			return nil, nil, ErrVersionAlreadyExists
 		}
 		return nil, nil, errors.New("软件包已存在，请使用上传新版本接口")
+	}
+
+	// 校验版本号格式
+	if err := validateVersionFormat(req.Version); err != nil {
+		return nil, nil, err
 	}
 
 	// 解析版本号
@@ -248,6 +269,11 @@ func (s *PackageService) UploadVersion(
 	// 检查版本是否已存在
 	if exists, _ := s.versionRepo.ExistsByPackageAndVersion(ctx, packageID, req.Version); exists {
 		return nil, ErrVersionAlreadyExists
+	}
+
+	// 校验版本号格式
+	if err := validateVersionFormat(req.Version); err != nil {
+		return nil, err
 	}
 
 	// 解析版本号

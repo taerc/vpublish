@@ -29,8 +29,9 @@ go.work.sum
 uploads/
 dist/
 build/
-web/node_modules/
-
+node_modules/
+node_modules/.package-lock.json
+.sisyphus/
 # Editor/IDE
 # .idea/
 # .vscode/
