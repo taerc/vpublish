@@ -91,19 +91,7 @@ func (r *VersionRepository) GetLatestByCategoryCode(ctx context.Context, categor
 
 	return &version, nil
 }
-	var version model.Version
-	err := r.db.WithContext(ctx).
-		Joins("JOIN packages ON packages.id = versions.package_id").
-		Joins("JOIN categories ON categories.id = packages.category_id").
-		Where("categories.code = ? AND versions.is_latest = ? AND packages.is_active = ?", categoryCode, true, true).
-		Preload("Package").
-		Preload("Package.Category").
-		First(&version).Error
-	if err != nil {
-		return nil, err
-	}
-	return &version, nil
-}
+
 
 func (r *VersionRepository) ClearLatestFlag(ctx context.Context, packageID uint) error {
 	return r.db.WithContext(ctx).
