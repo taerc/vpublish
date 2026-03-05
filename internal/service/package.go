@@ -356,6 +356,11 @@ func (s *PackageService) GetFilePath(version *model.Version) string {
 	return s.storage.GetFilePath(version.FilePath)
 }
 
+// IncrementDownloadCount 增加版本下载计数
+func (s *PackageService) IncrementDownloadCount(ctx context.Context, versionID uint) error {
+	return s.versionRepo.IncrementDownloadCount(ctx, versionID)
+}
+
 // parseVersionCode 将版本字符串转换为数字
 // 例如: "1.2.3" -> 100020003
 func parseVersionCode(version string) (int, error) {

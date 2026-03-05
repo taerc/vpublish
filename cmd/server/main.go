@@ -177,6 +177,7 @@ func setupRoutes(
 				auth.GET("/packages/:id/versions", packageHandler.ListVersions)
 				auth.POST("/packages/:id/versions", packageHandler.UploadVersion)
 				auth.DELETE("/versions/:id", packageHandler.DeleteVersion)
+				auth.GET("/versions/:id/download", packageHandler.DownloadVersion) // 管理端下载
 
 				// 统计
 				auth.GET("/stats/daily", statsHandler.DailyStats)

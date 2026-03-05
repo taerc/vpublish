@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/taerc/vpublish/internal/middleware"
 	"github.com/taerc/vpublish/internal/service"
+	"github.com/taerc/vpublish/pkg/password"
 	"github.com/taerc/vpublish/pkg/response"
 )
-
 type UserHandler struct {
 	userService *service.UserService
 }
@@ -128,10 +128,16 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 	}
 
 	var req struct {
-		Password string `json:"password" binding:"required,min=6"`
+		Password string `json:"password" binding:"required,min=8,max=72"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "invalid request")
+		return
+	}
+
+	// 验证密码复杂度
+	if err := password.Validate(req.Password); err != nil {
+		response.BadRequest(c, err.Error())
 		return
 	}
 

@@ -67,8 +67,9 @@
             {{ formatDate(row.published_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
+            <el-button link type="primary" @click="handleDownload(row)">下载</el-button>
             <el-button link type="primary" @click="handleViewDetail(row)">详情</el-button>
             <el-button link type="danger" @click="handleDeleteVersion(row)">删除</el-button>
           </template>
@@ -231,6 +232,15 @@ function handleFileRemove() {
 function handleViewDetail(row: Version) {
   currentVersion.value = row
   detailDialogVisible.value = true
+}
+
+async function handleDownload(row: Version) {
+  try {
+    await packageApi.downloadVersion(row.id, row.file_name)
+    ElMessage.success('下载完成')
+  } catch (error: any) {
+    ElMessage.error(error.message || '下载失败')
+  }
 }
 
 async function handleDeleteVersion(row: Version) {

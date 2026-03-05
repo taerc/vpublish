@@ -1,6 +1,7 @@
-import { get, post, put, del, type ApiResponse, type PageResponse } from './request'
+import { get, post, put, del, downloadFile, type ApiResponse, type PageResponse } from './request'
 import type { Category } from './category'
 
+// 类型定义
 // 类型定义
 export interface Package {
   id: number
@@ -100,5 +101,10 @@ export const packageApi = {
   // 删除版本
   deleteVersion(versionId: number): Promise<ApiResponse<null>> {
     return del(`/admin/versions/${versionId}`)
+  },
+
+  // 下载版本
+  async downloadVersion(versionId: number, filename?: string): Promise<void> {
+    await downloadFile(`/admin/versions/${versionId}/download`, filename)
   },
 }

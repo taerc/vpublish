@@ -32,6 +32,11 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response: AxiosResponse) => {
+    // 如果是 blob 类型，直接返回
+    if (response.config.responseType === 'blob') {
+      return response
+    }
+    
     const res = response.data
     if (res.code !== 0) {
       ElMessage.error(res.message || '请求失败')
@@ -95,6 +100,34 @@ export function put<T = any>(url: string, data?: any, config?: AxiosRequestConfi
 
 export function del<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
   return service.delete(url, config)
+}
+
+// 下载文件
+export async function downloadFile(url: string, filename?: string): Promise<void> {
+  const response = await service.get(url, {
+    responseType: 'blob',
+  })
+  
+  // 从响应头获取文件名
+  const contentDisposition = response.headers?.['content-disposition']
+  let downloadFilename = filename
+  if (!downloadFilename && contentDisposition) {
+    const match = contentDisposition.match(/filename=(.+)/)
+    if (match) {
+      downloadFilename = match[1]
+    }
+  }
+  
+  // 创建下载链接
+  const blob = new Blob([response as any])
+  const blobUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = blobUrl
+  link.download = downloadFilename || 'download'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(blobUrl)
 }
 
 export default service

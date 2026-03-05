@@ -6,6 +6,7 @@ import (
 
 	"github.com/taerc/vpublish/internal/model"
 	"github.com/taerc/vpublish/internal/repository"
+	"github.com/taerc/vpublish/pkg/password"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,6 +14,7 @@ var (
 	ErrUserNotFound      = errors.New("user not found")
 	ErrUserAlreadyExists = errors.New("user already exists")
 	ErrInvalidPassword   = errors.New("invalid password")
+	ErrWeakPassword      = errors.New("密码不符合安全要求")
 )
 
 type UserService struct {
@@ -25,7 +27,7 @@ func NewUserService(userRepo *repository.UserRepository) *UserService {
 
 type CreateUserRequest struct {
 	Username string `json:"username" binding:"required,min=3,max=50"`
-	Password string `json:"password" binding:"required,min=6"`
+	Password string `json:"password" binding:"required,min=8,max=72"`
 	Nickname string `json:"nickname"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
@@ -40,7 +42,7 @@ type UpdateUserRequest struct {
 
 type ChangePasswordRequest struct {
 	OldPassword string `json:"old_password" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required,min=6"`
+	NewPassword string `json:"new_password" binding:"required,min=8,max=72"`
 }
 
 func (s *UserService) Create(ctx context.Context, req *CreateUserRequest) (*model.User, error) {
@@ -48,6 +50,11 @@ func (s *UserService) Create(ctx context.Context, req *CreateUserRequest) (*mode
 	existing, _ := s.userRepo.GetByUsername(ctx, req.Username)
 	if existing != nil {
 		return nil, ErrUserAlreadyExists
+	}
+
+	// 验证密码复杂度
+	if err := password.Validate(req.Password); err != nil {
+		return nil, err
 	}
 
 	// 哈希密码
@@ -125,6 +132,11 @@ func (s *UserService) ChangePassword(ctx context.Context, id uint, req *ChangePa
 		return ErrInvalidPassword
 	}
 
+	// 验证新密码复杂度
+	if err := password.Validate(req.NewPassword); err != nil {
+		return err
+	}
+
 	// 哈希新密码
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -135,6 +147,11 @@ func (s *UserService) ChangePassword(ctx context.Context, id uint, req *ChangePa
 }
 
 func (s *UserService) ResetPassword(ctx context.Context, id uint, newPassword string) error {
+	// 验证密码复杂度
+	if err := password.Validate(newPassword); err != nil {
+		return err
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err

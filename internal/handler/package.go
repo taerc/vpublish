@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"context"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/taerc/vpublish/internal/middleware"
@@ -317,16 +320,116 @@ func (h *PackageHandler) Download(c *gin.Context) {
 		return
 	}
 
-	// 记录下载日志
+	// 提前保存需要的数据，避免在 goroutine 中使用请求上下文
+	versionID := uint(id)
+	appKeyVal := appKeyHeader
+	clientIP := middleware.GetClientIP(c)
+	userAgent := c.GetHeader("User-Agent")
+	downloadedAt := middleware.GetCurrentTime()
+
+	// 记录下载日志和统计（使用独立的 context，避免请求结束后 context 被取消）
 	go func() {
+		ctx := context.Background()
+
+		// 1. 记录下载日志
 		log := &model.DownloadLog{
-			VersionID:    uint(id),
-			AppKey:       appKeyHeader,
-			ClientIP:     middleware.GetClientIP(c),
-			UserAgent:    c.GetHeader("User-Agent"),
-			DownloadedAt: middleware.GetCurrentTime(),
+			VersionID:    versionID,
+			AppKey:       appKeyVal,
+			ClientIP:     clientIP,
+			UserAgent:    userAgent,
+			DownloadedAt: downloadedAt,
 		}
-		h.statsRepo.CreateDownloadLog(c.Request.Context(), log)
+		if err := h.statsRepo.CreateDownloadLog(ctx, log); err != nil {
+			fmt.Printf("failed to create download log: %v\n", err)
+		}
+
+		// 2. 增加版本下载计数
+		if err := h.packageService.IncrementDownloadCount(ctx, versionID); err != nil {
+			fmt.Printf("failed to increment download count: %v\n", err)
+		}
+
+		// 3. 更新统计表
+		categoryID := version.Package.CategoryID
+		today := downloadedAt.Truncate(24 * time.Hour)
+		stat := &model.DownloadStat{
+			VersionID:     versionID,
+			CategoryID:    categoryID,
+			StatDate:      today,
+			DownloadCount: 1,
+		}
+		if err := h.statsRepo.UpsertDownloadStat(ctx, stat); err != nil {
+			fmt.Printf("failed to update download stats: %v\n", err)
+		}
+	}()
+	// 发送文件
+	filePath := h.packageService.GetFilePath(version)
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Content-Disposition", "attachment; filename="+version.FileName)
+	c.Header("Content-Type", "application/octet-stream")
+	c.FileAttachment(filePath, version.FileName)
+}
+// DownloadVersion 管理端下载版本（无需签名验证）
+func (h *PackageHandler) DownloadVersion(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "invalid version id")
+		return
+	}
+
+	// 获取版本信息
+	version, err := h.packageService.GetVersionByID(c.Request.Context(), uint(id))
+	if err != nil {
+		response.NotFound(c, "version not found")
+		return
+	}
+
+	// 获取当前用户信息
+	userKey := "admin"
+	userID := middleware.GetUserID(c)
+	if userID > 0 {
+		userKey = fmt.Sprintf("admin_%d", userID)
+	}
+
+	// 提前保存需要的数据，避免在 goroutine 中使用请求上下文
+	versionID := uint(id)
+	categoryID := version.Package.CategoryID
+	clientIP := middleware.GetClientIP(c)
+	userAgent := c.GetHeader("User-Agent")
+	downloadedAt := middleware.GetCurrentTime()
+
+	// 记录下载日志和统计（使用独立的 context，避免请求结束后 context 被取消）
+	go func() {
+		ctx := context.Background()
+
+		// 1. 记录下载日志
+		log := &model.DownloadLog{
+			VersionID:    versionID,
+			AppKey:       userKey,
+			ClientIP:     clientIP,
+			UserAgent:    userAgent,
+			DownloadedAt: downloadedAt,
+		}
+		if err := h.statsRepo.CreateDownloadLog(ctx, log); err != nil {
+			fmt.Printf("failed to create download log: %v\n", err)
+		}
+
+		// 2. 增加版本下载计数
+		if err := h.packageService.IncrementDownloadCount(ctx, versionID); err != nil {
+			fmt.Printf("failed to increment download count: %v\n", err)
+		}
+
+		// 3. 更新统计表（用于图表展示）
+		today := downloadedAt.Truncate(24 * time.Hour)
+		stat := &model.DownloadStat{
+			VersionID:     versionID,
+			CategoryID:    categoryID,
+			StatDate:      today,
+			DownloadCount: 1,
+		}
+		if err := h.statsRepo.UpsertDownloadStat(ctx, stat); err != nil {
+			fmt.Printf("failed to update download stats: %v\n", err)
+		}
 	}()
 
 	// 发送文件

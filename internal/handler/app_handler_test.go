@@ -168,19 +168,19 @@ func splitVersion(version string) []string {
 	return result[:3]
 }
 
-// TestGetLatestByCategory 测试获取类别最新版�?func TestGetLatestByCategory(t *testing.T) {
+// TestGetLatestByCategory 测试获取类别最新版本
 	gin.SetMode(gin.TestMode)
 	db := setupHandlerTestDB(t)
 	ls, tmpDir := setupHandlerTestStorage(t)
 	defer os.RemoveAll(tmpDir)
 
 	user := createHandlerTestUser(t, db)
-	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
+	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
 	pkg := createHandlerTestPackage(t, db, category.ID, user.ID, "DroneApp")
 	version := createHandlerTestVersion(t, db, pkg.ID, user.ID, "1.0.0")
 	appKey := createHandlerTestAppKey(t, db)
 
-	// 设置仓储和服�?	packageRepo := repository.NewPackageRepository(db)
+	// 设置仓储和服�?	packageRepo := repository.NewPackageRepository(db)
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 	appKeyRepo := repository.NewAppKeyRepository(db)
@@ -223,7 +223,7 @@ func splitVersion(version string) []string {
 		t.Errorf("expected version id %d, got %v", version.ID, data["id"])
 	}
 
-	// 检查是否包含下载链�?	if _, ok := data["download_url"]; !ok {
+	// 检查是否包含下载链�?	if _, ok := data["download_url"]; !ok {
 		t.Error("expected download_url in response")
 	}
 }
@@ -262,7 +262,7 @@ func TestGetLatestByCategory_NotFound(t *testing.T) {
 	}
 }
 
-// TestGetLatestByCategory_EmptyCode 测试空类别代�?func TestGetLatestByCategory_EmptyCode(t *testing.T) {
+// TestGetLatestByCategory_EmptyCode 测试空类别代�?func TestGetLatestByCategory_EmptyCode(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	db := setupHandlerTestDB(t)
 	ls, tmpDir := setupHandlerTestStorage(t)
@@ -302,7 +302,7 @@ func TestGetLatestByCategory_InactivePackage(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	user := createHandlerTestUser(t, db)
-	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
+	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
 	pkg := createHandlerTestPackage(t, db, category.ID, user.ID, "DroneApp")
 	// 设置为非活跃
 	pkg.IsActive = false
@@ -329,19 +329,19 @@ func TestGetLatestByCategory_InactivePackage(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
-	// 非活跃软件包的版本不应该被返�?	if w.Code != http.StatusNotFound {
+	// 非活跃软件包的版本不应该被返�?	if w.Code != http.StatusNotFound {
 		t.Errorf("expected status %d for inactive package, got %d", http.StatusNotFound, w.Code)
 	}
 }
 
-// TestGetLatestByCategory_MultipleVersions 测试多个版本只返回最�?func TestGetLatestByCategory_MultipleVersions(t *testing.T) {
+// TestGetLatestByCategory_MultipleVersions 测试多个版本只返回最�?func TestGetLatestByCategory_MultipleVersions(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	db := setupHandlerTestDB(t)
 	ls, tmpDir := setupHandlerTestStorage(t)
 	defer os.RemoveAll(tmpDir)
 
 	user := createHandlerTestUser(t, db)
-	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
+	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
 	pkg := createHandlerTestPackage(t, db, category.ID, user.ID, "DroneApp")
 
 	// 创建多个版本
@@ -397,7 +397,7 @@ func TestDownload_MissingToken(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	user := createHandlerTestUser(t, db)
-	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
+	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
 	pkg := createHandlerTestPackage(t, db, category.ID, user.ID, "DroneApp")
 	_ = createHandlerTestVersion(t, db, pkg.ID, user.ID, "1.0.0")
 	appKey := createHandlerTestAppKey(t, db)
@@ -432,7 +432,7 @@ func TestDownload_InvalidToken(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	user := createHandlerTestUser(t, db)
-	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
+	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
 	pkg := createHandlerTestPackage(t, db, category.ID, user.ID, "DroneApp")
 	_ = createHandlerTestVersion(t, db, pkg.ID, user.ID, "1.0.0")
 	appKey := createHandlerTestAppKey(t, db)
@@ -500,7 +500,7 @@ func TestDownload_ValidToken(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	user := createHandlerTestUser(t, db)
-	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
+	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
 	pkg := createHandlerTestPackage(t, db, category.ID, user.ID, "DroneApp")
 	version := createHandlerTestVersion(t, db, pkg.ID, user.ID, "1.0.0")
 	appKey := createHandlerTestAppKey(t, db)
@@ -548,7 +548,7 @@ func TestGenerateDownloadURL(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	user := createHandlerTestUser(t, db)
-	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
+	category := createHandlerTestCategory(t, db, "无人�?, "TYPE_WU_REN_JI")
 	pkg := createHandlerTestPackage(t, db, category.ID, user.ID, "DroneApp")
 	version := createHandlerTestVersion(t, db, pkg.ID, user.ID, "1.0.0")
 	appKey := createHandlerTestAppKey(t, db)
@@ -597,7 +597,7 @@ func TestVersionModel_GetDownloadURL(t *testing.T) {
 	}
 }
 
-// TestVersionModel_GetDownloadURL_LargeID 测试大ID�?func TestVersionModel_GetDownloadURL_LargeID(t *testing.T) {
+// TestVersionModel_GetDownloadURL_LargeID 测试大ID�?func TestVersionModel_GetDownloadURL_LargeID(t *testing.T) {
 	version := &model.Version{
 		ID: 999999,
 	}
