@@ -73,7 +73,8 @@ func (r *VersionRepository) GetLatestByCategoryCode(ctx context.Context, categor
 	err := r.db.WithContext(ctx).
 		Joins("JOIN packages ON packages.id = versions.package_id").
 		Joins("JOIN categories ON categories.id = packages.category_id").
-		Where("categories.code = ? AND versions.is_latest = ? AND packages.is_active = ?", categoryCode, true, true).
+		Where("categories.code = ? AND packages.is_active = ?", categoryCode, true).
+		Order("versions.version_code DESC").
 		First(&version).Error
 	if err != nil {
 		return nil, err
