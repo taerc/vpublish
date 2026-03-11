@@ -142,23 +142,94 @@ GET /api/v1/admin/stats/yearly
 
 MCP服务提供了完整的软件包管理功能，支持AI助手直接调用。
 
+### 传输模式
+
+MCP服务支持两种传输模式：
+
+| 模式 | 命令参数 | 说明 |
+|------|---------|------|
+| **stdio** | `-transport=stdio` (默认) | 标准输入/输出，适合本地客户端 |
+| **HTTP** | `-transport=http` | HTTP + SSE，适合远程访问 |
+
 ### 构建MCP服务
 
 ```bash
 go build -o vpublish-mcp ./cmd/mcp
 ```
 
+### stdio 模式配置
+
+**Trae / Claude Desktop 配置：**
+
+```json
+{
+  "mcpServers": [
+    {
+      "name": "vpublish-mcp",
+      "command": ["D:/wkspace/git/vpublish/vpublish-mcp.exe"],
+      "env": {
+        "MCP_APP_KEY": "your_app_key",
+        "MCP_APP_SECRET": "your_app_secret"
+      }
+    }
+  ]
+}
+```
+
+### HTTP 模式配置
+
+**1. 启动服务：**
+
+```bash
+./vpublish-mcp -transport=http
+```
+
+**2. Trae 配置：**
+
+```json
+{
+  "mcpServers": {
+    "vpublish-mcp": {
+      "url": "http://localhost:8080/mcp",
+      "headers": {
+        "X-MCP-App-Key": "your_app_key",
+        "X-MCP-App-Secret": "your_app_secret"
+      }
+    }
+  }
+}
+```
+
+**3. 配置文件 (`configs/config.yaml`)：**
+
+```yaml
+mcp:
+  http:
+    enabled: true          # 是否启用 HTTP 传输
+    host: localhost        # 监听地址
+    port: 8080             # 与主服务共用端口
+    endpoint_path: /mcp    # MCP 端点路径
+```
+
+### 认证方式
+
+| 方式 | Header 格式 | 说明 |
+|------|------------|------|
+| 自定义 Header | `X-MCP-App-Key` + `X-MCP-App-Secret` | 推荐方式 |
+| Bearer Token | `Authorization: Bearer <token>` | 标准方式 |
+
 ### MCP工具列表
 
-- `list_categories` - 获取所有软件类别
-- `list_packages` - 获取软件包列表
-- `list_versions` - 获取软件包版本列表
-- `get_latest_version` - 获取指定类别的最新版本
-- `create_category` - 创建新的软件类别
-- `create_package` - 创建新的软件包
-- `get_download_stats` - 获取下载统计
-- `delete_version` - 删除指定版本
-
+| 工具 | 权限 | 说明 |
+|------|------|------|
+| `list_categories` | 只读 | 获取所有软件类别 |
+| `list_packages` | 只读 | 获取软件包列表 |
+| `list_versions` | 只读 | 获取软件包版本列表 |
+| `get_latest_version` | 只读 | 获取指定类别的最新版本 |
+| `get_download_stats` | 只读 | 获取下载统计 |
+| `create_category` | 读写 | 创建新的软件类别 |
+| `create_package` | 读写 | 创建新的软件包 |
+| `delete_version` | 读写 | 删除指定版本 |
 ## 功能特性
 
 ### 软件类别管理

@@ -31,7 +31,9 @@ dist/
 build/
 node_modules/
 web/node_modules/
+
 node_modules/.package-lock.json
+
 .sisyphus/
 # Editor/IDE
 # .idea/

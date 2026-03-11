@@ -15,14 +15,13 @@ import (
 	"github.com/taerc/vpublish/internal/repository"
 	"github.com/taerc/vpublish/pkg/pinyin"
 )
-
 func main() {
 	// 加载配置
-	cfg, err := config.Load("./configs/config.yaml")
+	configPath := config.ResolveConfigPath("./configs/config.yaml")
+	cfg, err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("load config: %v", err)
 	}
-
 	// 初始化数据库
 	db, err := database.New(&cfg.Database)
 	if err != nil {
@@ -69,10 +68,9 @@ func registerTools(
 	statsRepo *repository.StatsRepository,
 ) {
 	// 1. 列出所有类别
-	s.AddTool(mcp.Tool{
-		Name:        "list_categories",
-		Description: "获取所有软件类别列表",
-	}, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.AddTool(mcp.NewTool("list_categories",
+		mcp.WithDescription("获取所有软件类别列表"),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		categories, err := categoryRepo.ListActive(ctx)
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
@@ -83,10 +81,10 @@ func registerTools(
 	})
 
 	// 2. 列出软件包
-	s.AddTool(mcp.Tool{
-		Name:        "list_packages",
-		Description: "获取软件包列表",
-	}, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.AddTool(mcp.NewTool("list_packages",
+		mcp.WithDescription("获取软件包列表"),
+		mcp.WithNumber("category_id", mcp.Description("类别ID")),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args := getArgs(request)
 		categoryID := uint(0)
 		if val, ok := args["category_id"].(float64); ok {
@@ -103,10 +101,10 @@ func registerTools(
 	})
 
 	// 3. 列出软件包版本
-	s.AddTool(mcp.Tool{
-		Name:        "list_versions",
-		Description: "获取软件包的所有版本",
-	}, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.AddTool(mcp.NewTool("list_versions",
+		mcp.WithDescription("获取软件包的所有版本"),
+		mcp.WithNumber("package_id", mcp.Required(), mcp.Description("软件包ID")),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args := getArgs(request)
 		packageID, ok := args["package_id"].(float64)
 		if !ok {
@@ -123,10 +121,10 @@ func registerTools(
 	})
 
 	// 4. 获取最新版本
-	s.AddTool(mcp.Tool{
-		Name:        "get_latest_version",
-		Description: "获取指定类别的最新版本",
-	}, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.AddTool(mcp.NewTool("get_latest_version",
+		mcp.WithDescription("获取指定类别的最新版本"),
+		mcp.WithString("category_code", mcp.Required(), mcp.Description("类别代码")),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args := getArgs(request)
 		categoryCode, ok := args["category_code"].(string)
 		if !ok {
@@ -157,10 +155,11 @@ func registerTools(
 	})
 
 	// 5. 创建类别
-	s.AddTool(mcp.Tool{
-		Name:        "create_category",
-		Description: "创建新的软件类别",
-	}, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.AddTool(mcp.NewTool("create_category",
+		mcp.WithDescription("创建新的软件类别"),
+		mcp.WithString("name", mcp.Required(), mcp.Description("类别名称")),
+		mcp.WithString("description", mcp.Description("类别描述")),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args := getArgs(request)
 		name, ok := args["name"].(string)
 		if !ok {
@@ -188,10 +187,14 @@ func registerTools(
 	})
 
 	// 6. 获取下载统计
-	s.AddTool(mcp.Tool{
-		Name:        "get_download_stats",
-		Description: "获取下载统计数据",
-	}, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.AddTool(mcp.NewTool("get_download_stats",
+		mcp.WithDescription("获取下载统计数据"),
+		mcp.WithString("type", mcp.Required(), mcp.Description("统计类型: daily/monthly/yearly")),
+		mcp.WithNumber("category_id", mcp.Description("类别ID")),
+		mcp.WithString("date", mcp.Description("日期(YYYY-MM-DD)，daily时使用")),
+		mcp.WithNumber("year", mcp.Description("年份，monthly/yearly时使用")),
+		mcp.WithNumber("month", mcp.Description("月份，monthly时使用")),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args := getArgs(request)
 		statsType, _ := args["type"].(string)
 		categoryID := uint(0)
@@ -246,10 +249,10 @@ func registerTools(
 	})
 
 	// 7. 删除版本
-	s.AddTool(mcp.Tool{
-		Name:        "delete_version",
-		Description: "删除指定版本",
-	}, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.AddTool(mcp.NewTool("delete_version",
+		mcp.WithDescription("删除指定版本"),
+		mcp.WithNumber("version_id", mcp.Required(), mcp.Description("版本ID")),
+	), func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args := getArgs(request)
 		versionID, ok := args["version_id"].(float64)
 		if !ok {

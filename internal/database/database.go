@@ -40,6 +40,6 @@ func Migrate(db *gorm.DB) error {
 		&model.Version{},
 		&model.DownloadLog{},
 		&model.DownloadStat{},
-		&model.OperationLog{},
+		&model.MCPCredential{},
 	)
 }

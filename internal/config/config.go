@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -15,6 +16,7 @@ type Config struct {
 	Storage  StorageConfig  `yaml:"storage"`
 	Log      LogConfig      `yaml:"log"`
 	CORS     CORSConfig     `yaml:"cors"`
+	MCP      MCPConfig      `yaml:"mcp"`
 }
 
 type ServerConfig struct {
@@ -63,6 +65,52 @@ type CORSConfig struct {
 	AllowHeaders []string `yaml:"allow_headers"`
 }
 
+// MCPConfig MCP 服务配置
+type MCPConfig struct {
+	HTTP MCPHTTPConfig `yaml:"http"`
+	Auth MCPAuthConfig `yaml:"auth"`
+}
+
+// MCPHTTPConfig MCP HTTP 传输配置
+type MCPHTTPConfig struct {
+	Enabled      bool   `yaml:"enabled"`       // 是否启用 HTTP 传输
+	Host         string `yaml:"host"`          // 监听地址
+	Port         int    `yaml:"port"`          // 监听端口
+	EndpointPath string `yaml:"endpoint_path"` // MCP 端点路径
+}
+
+// MCPAuthConfig MCP 认证配置
+type MCPAuthConfig struct {
+	AppKey    string `yaml:"app_key"`    // 应用 Key
+	AppSecret string `yaml:"app_secret"` // 应用 Secret
+}
+
+// ResolveConfigPath 解析配置文件路径
+// 优先级：
+// 1. 环境变量 MCP_CONFIG_PATH
+// 2. 可执行文件所在目录的 configs/config.yaml
+// 3. 当前工作目录的 ./configs/config.yaml
+func ResolveConfigPath(defaultPath string) string {
+	// 1. 检查环境变量
+	if envPath := os.Getenv("MCP_CONFIG_PATH"); envPath != "" {
+		if _, err := os.Stat(envPath); err == nil {
+			return envPath
+		}
+	}
+
+	// 2. 尝试可执行文件所在目录
+	if execPath, err := os.Executable(); err == nil {
+		execDir := filepath.Dir(execPath)
+		execConfigPath := filepath.Join(execDir, "configs", "config.yaml")
+		if _, err := os.Stat(execConfigPath); err == nil {
+			return execConfigPath
+		}
+	}
+
+	// 3. 返回默认路径（当前工作目录）
+	return defaultPath
+}
+
 func Load(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -108,6 +156,17 @@ func Load(path string) (*Config, error) {
 	}
 	if len(cfg.CORS.AllowHeaders) == 0 {
 		cfg.CORS.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "X-App-Key", "X-Timestamp", "X-Signature"}
+	}
+
+	// MCP HTTP defaults
+	if cfg.MCP.HTTP.Port == 0 {
+		cfg.MCP.HTTP.Port = 8080 // 默认与主服务共用端口
+	}
+	if cfg.MCP.HTTP.Host == "" {
+		cfg.MCP.HTTP.Host = "localhost"
+	}
+	if cfg.MCP.HTTP.EndpointPath == "" {
+		cfg.MCP.HTTP.EndpointPath = "/mcp"
 	}
 
 	return &cfg, nil
