@@ -25,3 +25,13 @@ storage:
 
 log:
   level: debug
+
+mcp:
+  http:
+    enabled: true          # 是否启用 HTTP 传输
+    host: 172.16.50.30 # 监听地址 (改为 localhost 以便本机访问)
+    port: 8081             # MCP 服务独立端口
+    endpoint_path: /mcp    # MCP 端点路径
+  auth:
+    app_key: "xQLnrFGofvCEVTWVBcSZWSgVjZO02Mai"            # MCP App Key (可通过环境变量 MCP_APP_KEY 设置)
+    app_secret: "08b18394023e170bde87eacb155256fc5c59d6fd00013bf1e0845543e9e1f748"         # MCP App Secret (可通过环境变量 MCP_APP_SECRET 设置)

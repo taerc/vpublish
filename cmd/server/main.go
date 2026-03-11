@@ -23,6 +23,8 @@ import (
 
 func main() {
 	// 加载配置
+	configPath := config.ResolveConfigPath("./configs/config.yaml")
+	cfg, err := config.Load(configPath)
 	cfg, err := config.Load("./configs/config.yaml")
 	if err != nil {
 		log.Fatalf("load config: %v", err)
@@ -51,6 +53,7 @@ func main() {
 	// 初始化 Repository
 	userRepo := repository.NewUserRepository(db)
 	appKeyRepo := repository.NewAppKeyRepository(db)
+	mcpCredRepo := repository.NewMCPCredentialRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 	packageRepo := repository.NewPackageRepository(db)
 	versionRepo := repository.NewVersionRepository(db)
@@ -62,6 +65,7 @@ func main() {
 	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, store, "")
 	statsService := service.NewStatsService(statsRepo)
 	appKeyService := service.NewAppKeyService(appKeyRepo)
+	mcpCredService := service.NewMCPCredentialService(mcpCredRepo)
 
 	// 初始化 Handler
 	authHandler := handler.NewAuthHandler(userService, jwtService)
@@ -70,6 +74,7 @@ func main() {
 	packageHandler := handler.NewPackageHandler(packageService, statsRepo, appKeyRepo)
 	statsHandler := handler.NewStatsHandler(statsService)
 	appKeyHandler := handler.NewAppKeyHandler(appKeyService)
+	mcpCredHandler := handler.NewMCPCredentialHandler(mcpCredService)
 
 	// 创建路由
 	gin.SetMode(cfg.Server.Mode)
@@ -79,7 +84,7 @@ func main() {
 	r.Use(middleware.CORS(&cfg.CORS))
 
 	setupRoutes(r, authHandler, userHandler, categoryHandler, packageHandler, statsHandler,
-		appKeyHandler, jwtService, appKeyRepo)
+		appKeyHandler, mcpCredHandler, jwtService, appKeyRepo)
 
 	// 启动服务器
 	srv := &http.Server{
@@ -123,6 +128,7 @@ func setupRoutes(
 	packageHandler *handler.PackageHandler,
 	statsHandler *handler.StatsHandler,
 	appKeyHandler *handler.AppKeyHandler,
+	mcpCredHandler *handler.MCPCredentialHandler,
 	jwtService *jwt.JWT,
 	appKeyRepo *repository.AppKeyRepository,
 ) {
@@ -194,6 +200,14 @@ func setupRoutes(
 				auth.PUT("/appkeys/:id", appKeyHandler.Update)
 				auth.DELETE("/appkeys/:id", appKeyHandler.Delete)
 				auth.POST("/appkeys/:id/regenerate", appKeyHandler.RegenerateSecret)
+
+				// MCP 凭证管理
+				auth.GET("/mcp-credentials", mcpCredHandler.List)
+				auth.GET("/mcp-credentials/:id", mcpCredHandler.Get)
+				auth.POST("/mcp-credentials", mcpCredHandler.Create)
+				auth.PUT("/mcp-credentials/:id", mcpCredHandler.Update)
+				auth.DELETE("/mcp-credentials/:id", mcpCredHandler.Delete)
+				auth.POST("/mcp-credentials/:id/regenerate", mcpCredHandler.RegenerateSecret)
 			}
 		}
 

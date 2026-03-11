@@ -29,6 +29,7 @@ This MCP server provides tools for managing software packages.
 - `category_id` (必需): 类别ID
 - `name` (必需): 软件包名称
 - `description` (可选): 软件包描述
+- `created_by` (可选): 创建者用户ID，默认为0
 
 ### get_download_stats
 获取下载统计数据
