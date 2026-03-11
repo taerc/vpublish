@@ -25,7 +25,6 @@ func main() {
 	// 加载配置
 	configPath := config.ResolveConfigPath("./configs/config.yaml")
 	cfg, err := config.Load(configPath)
-	cfg, err := config.Load("./configs/config.yaml")
 	if err != nil {
 		log.Fatalf("load config: %v", err)
 	}
