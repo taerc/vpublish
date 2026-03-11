@@ -103,12 +103,12 @@
             :on-change="handleFileChange"
             :on-remove="handleFileRemove"
             :file-list="fileList"
-            accept=".apk,.ipa,.exe,.dmg,.zip,.tar.gz,.pkg,.deb,.rpm"
+            accept=".apk,.ipa,.exe,.dmg,.zip,.tar.gz,.pkg,.deb,.rpm,.bin"
           >
             <el-button type="primary">选择文件</el-button>
             <template #tip>
               <div class="el-upload__tip">
-                支持 apk, ipa, exe, dmg, zip, tar.gz, pkg, deb, rpm 格式，名称将自动从文件名提取
+                支持 apk, ipa, exe, dmg, zip, tar.gz, pkg, deb, rpm, bin 格式，名称将自动从文件名提取
               </div>
             </template>
           </el-upload>
