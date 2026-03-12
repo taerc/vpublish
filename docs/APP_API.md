@@ -746,12 +746,14 @@ public class VPublishClient {
 
 ### 类别代码命名规则
 
-类别代码自动从中文拼音生成，格式：`TYPE_<拼音大写>`
+类别代码自动从名称生成（中文转拼音，英文数字保留），格式：`TYPE_<拼音大写>`
 
 | 类别名称 | 类别代码 |
 |----------|----------|
 | 无人机 | TYPE_WU_REN_JI |
+| 无人机V2 | TYPE_WU_REN_JI_V2 |
 | 地面站 | TYPE_DI_MIAN_ZHAN |
+| 地面站Pro | TYPE_DI_MIAN_ZHAN_PRO |
 | 飞控系统 | TYPE_FEI_KONG_XI_TONG |
 
 ### 版本号规范

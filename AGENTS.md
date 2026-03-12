@@ -304,7 +304,8 @@ type Category struct {
     ID          uint           `gorm:"primaryKey" json:"id" example:"1"`
     // 类别名称
     Name        string         `gorm:"size:100;uniqueIndex;not null" json:"name" example:"无人机应用"`
-    // 唯一代码，根据名称自动生成的拼音代码
+    // 唯一代码，根据名称自动生成（中文转拼音，英文数字保留）
+    // 示例：无人机应用 -> TYPE_WU_REN_JI_YING_YONG，无人机V2 -> TYPE_WU_REN_JI_V2
     Code        string         `gorm:"size:50;uniqueIndex;not null" json:"code" example:"TYPE_WU_REN_JI_YING_YONG"`
     // 描述
     Description string         `gorm:"size:500" json:"description" example:"各种无人机相关的应用程序分类"`
@@ -1018,7 +1019,8 @@ type CreateCategoryResponse struct {
 // CreateCategory 创建软件类别
 // @Summary 创建软件类别
 // @Description 创建一个新的软件类别，如无人机类型、地面站系统等。
-// @Description 系统会自动根据中文名称生成拼音代码（如：无人机 -> TYPE_WU_REN_JI），便于后台识别。
+// @Description 系统会自动根据名称生成代码（中文转拼音，英文数字保留），便于后台识别。
+// @Description 示例：无人机V2 -> TYPE_WU_REN_JI_V2，地面站Pro -> TYPE_DI_MIAN_ZHAN_PRO
 // @Security BearerAuth [Bearer]
 // @Tags 管理员/类别管理
 // @Accept json
@@ -1201,7 +1203,8 @@ type Category struct {
     ID          uint           `gorm:"primaryKey" json:"id" example:"1"`
     // 类别名称，唯一值，长度3-100字符
     Name        string         `gorm:"size:100;uniqueIndex;not null" json:"name" example:"无人机应用" validate:"min=3,max=100"`
-    // 唯一代码，根据名称通过拼音算法自动生成（如："无人机应用" -> "TYPE_WU_REN_JI_YING_YONG"）
+    // 唯一代码，根据名称自动生成（中文转拼音，英文数字保留）
+    // 示例：无人机应用 -> TYPE_WU_REN_JI_YING_YONG，无人机V2 -> TYPE_WU_REN_JI_V2
     Code        string         `gorm:"size:50;uniqueIndex;not null" json:"code" example:"TYPE_WU_REN_JI_YING_YONG" validate:"len=20,max=50"`
     // 可选的描述信息，最大500字符
     Description string         `gorm:"size:500" json:"description" example:"包含各类无人机飞行、遥控、管理相关应用软件" validate:"max=500"`
