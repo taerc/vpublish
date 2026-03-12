@@ -43,27 +43,38 @@ package: build
 	
 	# 复制二进制文件
 	cp $(BUILD_DIR)/vpublish-server $(DIST_DIR)/$(PACKAGE_NAME)/
-	cp $(BUILD_DIR)/vpublish-mcp $(DIST_DIR)/$(PACKAGE_NAME)/
 	
 	# 复制前端静态文件
 	cp -r web/dist $(DIST_DIR)/$(PACKAGE_NAME)/web
 	
-	# 复制配置和迁移文件
-	cp -r configs $(DIST_DIR)/$(PACKAGE_NAME)/
-	cp -r migrations $(DIST_DIR)/$(PACKAGE_NAME)/
+	# 复制配置文件模板
+	mkdir -p $(DIST_DIR)/$(PACKAGE_NAME)/configs
+	cp configs/config.yaml.example $(DIST_DIR)/$(PACKAGE_NAME)/configs/ 2>/dev/null || \
+		cp configs/config.yaml $(DIST_DIR)/$(PACKAGE_NAME)/configs/config.yaml.example
+	
+	# 复制部署文件 (systemd service + 安装脚本 + nginx配置)
+	cp -r deploy $(DIST_DIR)/$(PACKAGE_NAME)/
+	chmod +x $(DIST_DIR)/$(PACKAGE_NAME)/deploy/install.sh
 	
 	# 复制说明文档
 	cp README.md $(DIST_DIR)/$(PACKAGE_NAME)/ 2>/dev/null || true
 	cp DEPLOYMENT.md $(DIST_DIR)/$(PACKAGE_NAME)/ 2>/dev/null || true
-	cp MCP_README.md $(DIST_DIR)/$(PACKAGE_NAME)/ 2>/dev/null || true
 	
 	# 创建压缩包
 	cd $(DIST_DIR) && tar -czf $(PACKAGE_NAME).tar.gz $(PACKAGE_NAME)
 	
 	@echo ""
+	@echo "=========================================="
 	@echo "Package created: $(DIST_DIR)/$(PACKAGE_NAME).tar.gz"
-	@echo "Version: $(VERSION)"
+	@echo "=========================================="
+	@echo "Version:    $(VERSION)"
+	@echo "Commit:     $(GIT_COMMIT)"
 	@echo "Build Time: $(BUILD_TIME)"
+	@echo ""
+	@echo "Deploy steps:"
+	@echo "  1. Copy package to target server"
+	@echo "  2. tar -xzf $(PACKAGE_NAME).tar.gz"
+	@echo "  3. cd $(PACKAGE_NAME) && ./deploy/install.sh"
 
 # 清理
 clean:

@@ -1,0 +1,20 @@
+[Unit]
+Description=VPublish Server - 低空智能平台软件包管理系统
+Documentation=https://github.com/taerc/vpublish
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/vpublish
+ExecStart=/opt/vpublish/vpublish-server
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65535
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

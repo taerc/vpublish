@@ -281,7 +281,74 @@ cors:
 
 ## 部署方式
 
-### 方式一：二进制部署
+### 方式一：一键安装（推荐）
+
+#### 1. 构建发布包
+
+在开发机上执行：
+
+```bash
+# 使用 Makefile
+make package
+
+# 或使用发版脚本
+./scripts/build-release.sh v2.1.0
+```
+
+发布包结构：
+
+```
+vpublish-v2.1.0-linux-amd64.tar.gz
+├── vpublish-server              # 后端二进制
+├── web/dist/                    # 前端静态文件
+├── configs/
+│   └── config.yaml.example      # 配置文件模板
+├── deploy/
+│   ├── vpublish.service         # systemd 服务文件
+│   ├── install.sh               # 一键安装脚本
+│   └── nginx.conf.example       # Nginx 配置示例
+└── README.md
+```
+
+#### 2. 上传到目标服务器
+
+```bash
+scp dist/vpublish-v2.1.0-linux-amd64.tar.gz root@server:/tmp/
+```
+
+#### 3. 执行安装
+
+```bash
+# 解压
+cd /tmp
+tar -xzf vpublish-v2.1.0-linux-amd64.tar.gz
+cd vpublish-v2.1.0-linux-amd64
+
+# 执行安装脚本
+./deploy/install.sh
+```
+
+安装脚本会自动：
+- 创建 `/opt/vpublish/` 目录结构
+- 复制二进制、配置、前端文件
+- 安装 systemd 服务
+
+#### 4. 配置并启动
+
+```bash
+# 修改配置文件
+vi /opt/vpublish/configs/config.yaml
+
+# 启动服务
+systemctl start vpublish
+
+# 检查状态
+systemctl status vpublish
+```
+
+---
+
+### 方式二：手动部署
 
 #### 1. 构建后端
 
@@ -351,7 +418,7 @@ systemctl enable vpublish
 systemctl start vpublish
 ```
 
-### 方式二：Nginx 反向代理部署
+### 方式三：Nginx 反向代理部署
 
 #### Nginx 配置示例
 
@@ -385,7 +452,7 @@ server {
 }
 ```
 
-### 方式三：开发环境部署
+### 方式四：开发环境部署
 
 ```bash
 # 后端
