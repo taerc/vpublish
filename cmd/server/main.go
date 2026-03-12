@@ -230,8 +230,8 @@ func setupRoutes(
 				auth.GET("/categories/active", categoryHandler.ListActive) // 获取启用的类别列表
 				auth.GET("/categories/:id", categoryHandler.Get)
 				auth.POST("/categories", categoryHandler.Create)
-				auth.PUT("/categories/:id", categoryHandler.Update)
-				auth.DELETE("/categories/:id", categoryHandler.Delete)
+				// auth.PUT("/categories/:id", categoryHandler.Update)    // 暂时禁用编辑功能
+				// auth.DELETE("/categories/:id", categoryHandler.Delete) // 暂时禁用删除功能
 
 				// 软件包管理
 				auth.GET("/packages", packageHandler.List)

@@ -31,12 +31,6 @@
           {{ formatDate(row.created_at) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="150" fixed="right">
-        <template #default="{ row }">
-          <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-          <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
-        </template>
-      </el-table-column>
     </el-table>
 
     <!-- 分页 -->
@@ -52,26 +46,17 @@
       />
     </div>
 
-    <!-- 编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑类别' : '新增类别'" width="500px">
+    <!-- 新增对话框 -->
+    <el-dialog v-model="dialogVisible" title="新增类别" width="500px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入类别名称" />
-        </el-form-item>
-        <el-form-item label="代码" v-if="isEdit">
-          <el-input v-model="form.code" disabled />
-          <template #extra>
-            <span style="color: #999; font-size: 12px;">类别代码由系统自动生成</span>
-          </template>
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
         </el-form-item>
         <el-form-item label="排序" prop="sort_order">
           <el-input-number v-model="form.sort_order" :min="0" />
-        </el-form-item>
-        <el-form-item label="状态" v-if="isEdit">
-          <el-switch v-model="form.is_active" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -84,14 +69,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { categoryApi, type Category, type CreateCategoryRequest, type UpdateCategoryRequest } from '@/api/category'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { categoryApi, type Category, type CreateCategoryRequest } from '@/api/category'
 import { formatDate } from '@/utils'
 
 const loading = ref(false)
 const submitLoading = ref(false)
 const dialogVisible = ref(false)
-const isEdit = ref(false)
 const tableData = ref<Category[]>([])
 const formRef = ref<FormInstance>()
 
@@ -102,12 +86,9 @@ const pagination = reactive({
 })
 
 const form = reactive({
-  id: 0,
   name: '',
-  code: '',
   description: '',
   sort_order: 0,
-  is_active: true,
 })
 
 const rules: FormRules = {
@@ -135,40 +116,10 @@ async function loadData() {
 }
 
 function handleAdd() {
-  isEdit.value = false
-  form.id = 0
   form.name = ''
-  form.code = ''
   form.description = ''
   form.sort_order = 0
-  form.is_active = true
   dialogVisible.value = true
-}
-
-function handleEdit(row: Category) {
-  isEdit.value = true
-  form.id = row.id
-  form.name = row.name
-  form.code = row.code
-  form.description = row.description
-  form.sort_order = row.sort_order
-  form.is_active = row.is_active
-  dialogVisible.value = true
-}
-
-async function handleDelete(row: Category) {
-  try {
-    await ElMessageBox.confirm(`确定要删除类别「${row.name}」吗？`, '提示', {
-      type: 'warning',
-    })
-    await categoryApi.delete(row.id)
-    ElMessage.success('删除成功')
-    loadData()
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      ElMessage.error(error.message || '删除失败')
-    }
-  }
 }
 
 async function handleSubmit() {
@@ -177,23 +128,13 @@ async function handleSubmit() {
 
   submitLoading.value = true
   try {
-    if (isEdit.value) {
-      const data: UpdateCategoryRequest = {
-        name: form.name,
-        description: form.description,
-        sort_order: form.sort_order,
-        is_active: form.is_active,
-      }
-      await categoryApi.update(form.id, data)
-    } else {
-      const data: CreateCategoryRequest = {
-        name: form.name,
-        description: form.description,
-        sort_order: form.sort_order,
-      }
-      await categoryApi.create(data)
+    const data: CreateCategoryRequest = {
+      name: form.name,
+      description: form.description,
+      sort_order: form.sort_order,
     }
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功')
+    await categoryApi.create(data)
+    ElMessage.success('创建成功')
     dialogVisible.value = false
     loadData()
   } catch (error: any) {
