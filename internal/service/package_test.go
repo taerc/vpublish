@@ -9,6 +9,7 @@ import (
 	"net/textproto"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/glebarez/sqlite"
@@ -138,7 +139,7 @@ func TestPackageService_CreateWithVersion_DuplicateVersion(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -194,7 +195,7 @@ func TestPackageService_CreateWithVersion_PackageExists_DifferentVersion(t *test
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -247,7 +248,7 @@ func TestPackageService_UploadVersion_DuplicateVersion(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -287,7 +288,7 @@ func TestPackageService_UploadVersion_VersionMustBeGreater(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader1 := createMultipartFileHeader(t, "TestApp_v2.0.0.apk", "test content")
@@ -408,7 +409,7 @@ func TestPackageService_CreateWithVersion_CategoryNotFound(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -439,7 +440,7 @@ func TestPackageService_CreateWithVersion_InvalidVersionFormat(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_invalid.apk", "test content")
@@ -469,7 +470,7 @@ func TestPackageService_UploadVersion_PackageNotFound(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -502,7 +503,7 @@ func TestPackageService_Delete(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	err := svc.Delete(ctx, pkg.ID)
@@ -528,7 +529,7 @@ func TestPackageService_Update(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	active := false
@@ -566,7 +567,7 @@ func TestPackageService_ListVersions(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader1 := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -602,7 +603,7 @@ func TestPackageService_DeleteVersion(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -635,7 +636,7 @@ func TestPackageService_UploadVersion_Success(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -680,7 +681,7 @@ func TestPackageService_GetFilePath(t *testing.T) {
 	versionRepo := repository.NewVersionRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
 
-	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
 	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
@@ -714,14 +715,14 @@ func TestValidateVersionFormat(t *testing.T) {
 		{" v1.0.0 ", false}, // 自动 trim
 
 		// 无效格式
-		{"v1.0", true},       // 只有2段
-		{"V1", true},         // 只有1段
-		{"x1.0.0", true},     // 错误前缀
-		{"1.0.0.0", true},    // 4段
+		{"v1.0", true},        // 只有2段
+		{"V1", true},          // 只有1段
+		{"x1.0.0", true},      // 错误前缀
+		{"1.0.0.0", true},     // 4段
 		{"v1.0.0-beta", true}, // 预发布标签
-		{"", true},           // 空字符串
-		{"abc", true},        // 非版本号
-		{"v1.0.0-rc1", true}, // 预发布标签
+		{"", true},            // 空字符串
+		{"abc", true},         // 非版本号
+		{"v1.0.0-rc1", true},  // 预发布标签
 	}
 
 	for _, tt := range tests {
@@ -737,5 +738,141 @@ func TestValidateVersionFormat(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestPackageService_GenerateDownloadURL_WithExternalPrefix(t *testing.T) {
+	db := setupServiceTestDB(t)
+	user := createTestUser(t, db)
+	category := createTestCategory(t, db)
+	pkg := createTestPackage(t, db, category, "TestApp", user.ID)
+	ls, tmpDir := createTestStorage(t)
+	defer os.RemoveAll(tmpDir)
+
+	packageRepo := repository.NewPackageRepository(db)
+	versionRepo := repository.NewVersionRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "http://cdn.example.com/dd")
+	ctx := context.Background()
+
+	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
+	req := &CreateVersionRequest{Version: "1.0.0", IsStable: true}
+	version, err := svc.UploadVersion(ctx, pkg.ID, user.ID, fileHeader, req)
+	if err != nil {
+		t.Fatalf("failed to upload version: %v", err)
+	}
+
+	url, err := svc.GenerateDownloadURL(ctx, version.ID, "test-secret")
+	if err != nil {
+		t.Fatalf("failed to generate download URL: %v", err)
+	}
+
+	expectedPrefix := "http://cdn.example.com/dd/api/v1/app/download/"
+	if !strings.HasPrefix(url, expectedPrefix) {
+		t.Errorf("expected URL to start with %q, got %q", expectedPrefix, url)
+	}
+	if !strings.Contains(url, "token=") {
+		t.Error("external URL should contain token parameter")
+	}
+	if !strings.Contains(url, "expires=") {
+		t.Error("external URL should contain expires parameter")
+	}
+}
+
+func TestPackageService_GenerateDownloadURL_WithoutExternalPrefix(t *testing.T) {
+	db := setupServiceTestDB(t)
+	user := createTestUser(t, db)
+	category := createTestCategory(t, db)
+	pkg := createTestPackage(t, db, category, "TestApp", user.ID)
+	ls, tmpDir := createTestStorage(t)
+	defer os.RemoveAll(tmpDir)
+
+	packageRepo := repository.NewPackageRepository(db)
+	versionRepo := repository.NewVersionRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
+	ctx := context.Background()
+
+	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
+	req := &CreateVersionRequest{Version: "1.0.0", IsStable: true}
+	version, err := svc.UploadVersion(ctx, pkg.ID, user.ID, fileHeader, req)
+	if err != nil {
+		t.Fatalf("failed to upload version: %v", err)
+	}
+
+	url, err := svc.GenerateDownloadURL(ctx, version.ID, "test-secret")
+	if err != nil {
+		t.Fatalf("failed to generate download URL: %v", err)
+	}
+
+	if !strings.HasPrefix(url, "http://localhost:8080/api/v1/app/download/") {
+		t.Errorf("expected internal URL format, got %q", url)
+	}
+	if !strings.Contains(url, "token=") {
+		t.Error("internal URL should contain token parameter")
+	}
+	if !strings.Contains(url, "expires=") {
+		t.Error("internal URL should contain expires parameter")
+	}
+}
+
+func TestPackageService_GenerateDownloadURL_VersionNotFound(t *testing.T) {
+	db := setupServiceTestDB(t)
+	ls, tmpDir := createTestStorage(t)
+	defer os.RemoveAll(tmpDir)
+
+	packageRepo := repository.NewPackageRepository(db)
+	versionRepo := repository.NewVersionRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
+	ctx := context.Background()
+
+	_, err := svc.GenerateDownloadURL(ctx, 999, "test-secret")
+	if err == nil {
+		t.Error("expected error for non-existent version")
+	}
+	if !errors.Is(err, ErrVersionNotFound) {
+		t.Errorf("expected ErrVersionNotFound, got: %v", err)
+	}
+}
+
+func TestPackageService_GenerateDownloadURL_ExternalPrefixWithTrailingSlash(t *testing.T) {
+	db := setupServiceTestDB(t)
+	user := createTestUser(t, db)
+	category := createTestCategory(t, db)
+	pkg := createTestPackage(t, db, category, "TestApp", user.ID)
+	ls, tmpDir := createTestStorage(t)
+	defer os.RemoveAll(tmpDir)
+
+	packageRepo := repository.NewPackageRepository(db)
+	versionRepo := repository.NewVersionRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "http://cdn.example.com/dd/")
+	ctx := context.Background()
+
+	fileHeader := createMultipartFileHeader(t, "TestApp_v1.0.0.apk", "test content")
+	req := &CreateVersionRequest{Version: "1.0.0", IsStable: true}
+	version, err := svc.UploadVersion(ctx, pkg.ID, user.ID, fileHeader, req)
+	if err != nil {
+		t.Fatalf("failed to upload version: %v", err)
+	}
+
+	url, err := svc.GenerateDownloadURL(ctx, version.ID, "test-secret")
+	if err != nil {
+		t.Fatalf("failed to generate download URL: %v", err)
+	}
+
+	if strings.Contains(url, "//api/") {
+		t.Errorf("URL should not have double slashes, got %q", url)
+	}
+	if !strings.Contains(url, "token=") {
+		t.Error("external URL should contain token parameter")
+	}
+	if !strings.Contains(url, "expires=") {
+		t.Error("external URL should contain expires parameter")
 	}
 }

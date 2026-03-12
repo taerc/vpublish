@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-"errors"
-	"regexp"
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -41,11 +41,12 @@ func validateVersionFormat(version string) error {
 }
 
 type PackageService struct {
-	packageRepo  *repository.PackageRepository
-	versionRepo  *repository.VersionRepository
-	categoryRepo *repository.CategoryRepository
-	storage      *storage.LocalStorage
-	baseURL      string
+	packageRepo       *repository.PackageRepository
+	versionRepo       *repository.VersionRepository
+	categoryRepo      *repository.CategoryRepository
+	storage           *storage.LocalStorage
+	baseURL           string
+	externalURLPrefix string
 }
 
 func NewPackageService(
@@ -54,13 +55,15 @@ func NewPackageService(
 	categoryRepo *repository.CategoryRepository,
 	storage *storage.LocalStorage,
 	baseURL string,
+	externalURLPrefix string,
 ) *PackageService {
 	return &PackageService{
-		packageRepo:  packageRepo,
-		versionRepo:  versionRepo,
-		categoryRepo: categoryRepo,
-		storage:      storage,
-		baseURL:      baseURL,
+		packageRepo:       packageRepo,
+		versionRepo:       versionRepo,
+		categoryRepo:      categoryRepo,
+		storage:           storage,
+		baseURL:           baseURL,
+		externalURLPrefix: externalURLPrefix,
 	}
 }
 
@@ -359,22 +362,25 @@ func (s *PackageService) DeleteVersion(ctx context.Context, id uint) error {
 	return s.versionRepo.Delete(ctx, id)
 }
 
-// GenerateDownloadURL 生成带签名的下载URL
+// GenerateDownloadURL 生成下载URL
+// 配置了 externalURLPrefix 时使用外部前缀，否则使用 baseURL
+// 两种情况都带签名
 func (s *PackageService) GenerateDownloadURL(ctx context.Context, versionID uint, appSecret string) (string, error) {
 	_, err := s.versionRepo.GetByID(ctx, versionID)
 	if err != nil {
 		return "", ErrVersionNotFound
 	}
 
-	// 生成过期时间（1小时后）
-	expires := time.Now().Add(time.Hour).Unix()
+	prefix := s.baseURL
+	if s.externalURLPrefix != "" {
+		prefix = strings.TrimRight(s.externalURLPrefix, "/")
+	}
 
-	// 生成签名令牌
+	expires := time.Now().Add(time.Hour).Unix()
 	token := signature.GenerateDownloadToken(versionID, appSecret, expires)
 
-	// 构建下载URL
 	return fmt.Sprintf("%s/api/v1/app/download/%d?token=%s&expires=%d",
-		s.baseURL, versionID, token, expires), nil
+		prefix, versionID, token, expires), nil
 }
 
 // GetFilePath 获取文件路径

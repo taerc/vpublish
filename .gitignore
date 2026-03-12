@@ -33,6 +33,7 @@ node_modules/
 web/node_modules/
 
 node_modules/.package-lock.json
+vpublish-server
 
 .sisyphus/
 # Editor/IDE

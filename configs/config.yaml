@@ -22,6 +22,7 @@ storage:
   type: local
   path: ./uploads
   max_file_size: 104857600 # 100MB
+  external_download_url_prefix: "" # 外部下载URL前缀，如 http://cdn.example.com/dd
 
 log:
   level: debug

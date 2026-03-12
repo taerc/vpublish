@@ -34,6 +34,19 @@ func NewPackageHandler(
 }
 
 // List 软件包列表
+// @Summary 获取软件包分页列表
+// @Description 获取软件包列表，支持按类别筛选和分页
+// @Tags 管理员/软件包管理
+// @Accept json
+// @Produce json
+// @Param category_id query int false "类别ID" minimum(0)
+// @Param page query int false "页码" minimum(1) default(1)
+// @Param page_size query int false "每页数量" minimum(1) maximum(100) default(20)
+// @Success 200 {object} response.Response{data=response.PageData{list=[]model.Package}} "软件包列表"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 500 {object} response.Response "服务器内部错误"
+// @Security BearerAuth []
+// @Router /admin/packages [get]
 func (h *PackageHandler) List(c *gin.Context) {
 	categoryID := middleware.ParseIntQuery(c, "category_id", 0)
 	page := middleware.ParseIntQuery(c, "page", 1)
@@ -49,6 +62,18 @@ func (h *PackageHandler) List(c *gin.Context) {
 }
 
 // Get 获取单个软件包
+// @Summary 获取软件包详情
+// @Description 根据ID获取单个软件包的详细信息
+// @Tags 管理员/软件包管理
+// @Accept json
+// @Produce json
+// @Param id path int true "软件包ID" minimum(1)
+// @Success 200 {object} response.Response{data=model.Package} "软件包详情"
+// @Failure 400 {object} response.Response "无效的ID"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 404 {object} response.Response "软件包不存在"
+// @Security BearerAuth []
+// @Router /admin/packages/{id} [get]
 func (h *PackageHandler) Get(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -66,6 +91,23 @@ func (h *PackageHandler) Get(c *gin.Context) {
 }
 
 // Create 创建软件包（含第一个版本上传）
+// @Summary 创建软件包
+// @Description 创建新的软件包并上传第一个版本文件
+// @Tags 管理员/软件包管理
+// @Accept mpfd
+// @Produce json
+// @Param file formData file true "软件包文件"
+// @Param category_id formData string true "类别ID"
+// @Param version formData string true "版本号" example("1.0.0")
+// @Param description formData string false "软件包描述"
+// @Param changelog formData string false "更新日志"
+// @Param force_upgrade formData bool false "是否强制升级" default(false)
+// @Success 200 {object} response.Response{data=map[string]interface{}} "创建成功，返回软件包和版本信息"
+// @Failure 400 {object} response.Response "请求参数错误"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 500 {object} response.Response "服务器内部错误"
+// @Security BearerAuth []
+// @Router /admin/packages [post]
 func (h *PackageHandler) Create(c *gin.Context) {
 	// 获取上传文件
 	file, err := c.FormFile("file")
@@ -113,6 +155,19 @@ func (h *PackageHandler) Create(c *gin.Context) {
 }
 
 // Update 更新软件包
+// @Summary 更新软件包
+// @Description 更新软件包信息
+// @Tags 管理员/软件包管理
+// @Accept json
+// @Produce json
+// @Param id path int true "软件包ID" minimum(1)
+// @Param request body service.UpdatePackageRequest true "更新请求参数"
+// @Success 200 {object} response.Response{data=model.Package} "更新成功"
+// @Failure 400 {object} response.Response "请求参数错误"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 404 {object} response.Response "软件包不存在"
+// @Security BearerAuth []
+// @Router /admin/packages/{id} [put]
 func (h *PackageHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -136,6 +191,18 @@ func (h *PackageHandler) Update(c *gin.Context) {
 }
 
 // Delete 删除软件包
+// @Summary 删除软件包
+// @Description 删除指定的软件包及其所有版本
+// @Tags 管理员/软件包管理
+// @Accept json
+// @Produce json
+// @Param id path int true "软件包ID" minimum(1)
+// @Success 200 {object} response.Response "删除成功"
+// @Failure 400 {object} response.Response "无效的ID"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 404 {object} response.Response "软件包不存在"
+// @Security BearerAuth []
+// @Router /admin/packages/{id} [delete]
 func (h *PackageHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -152,6 +219,20 @@ func (h *PackageHandler) Delete(c *gin.Context) {
 }
 
 // ListVersions 获取软件包版本列表
+// @Summary 获取版本列表
+// @Description 获取指定软件包的所有版本列表，支持分页
+// @Tags 管理员/版本管理
+// @Accept json
+// @Produce json
+// @Param id path int true "软件包ID" minimum(1)
+// @Param page query int false "页码" minimum(1) default(1)
+// @Param page_size query int false "每页数量" minimum(1) maximum(100) default(20)
+// @Success 200 {object} response.Response{data=response.PageData{list=[]model.Version}} "版本列表"
+// @Failure 400 {object} response.Response "无效的软件包ID"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 500 {object} response.Response "服务器内部错误"
+// @Security BearerAuth []
+// @Router /admin/packages/{id}/versions [get]
 func (h *PackageHandler) ListVersions(c *gin.Context) {
 	packageID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -172,6 +253,26 @@ func (h *PackageHandler) ListVersions(c *gin.Context) {
 }
 
 // UploadVersion 上传新版本
+// @Summary 上传新版本
+// @Description 为指定软件包上传新版本文件
+// @Tags 管理员/版本管理
+// @Accept mpfd
+// @Produce json
+// @Param id path int true "软件包ID" minimum(1)
+// @Param file formData file true "版本文件"
+// @Param version formData string true "版本号" example("1.0.1")
+// @Param changelog formData string false "更新日志"
+// @Param release_notes formData string false "发布说明"
+// @Param min_version formData string false "最低兼容版本" example("1.0.0")
+// @Param force_upgrade formData bool false "是否强制升级" default(false)
+// @Param is_stable formData bool false "是否稳定版" default(true)
+// @Success 200 {object} response.Response{data=model.Version} "上传成功"
+// @Failure 400 {object} response.Response "请求参数错误"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 404 {object} response.Response "软件包不存在"
+// @Failure 500 {object} response.Response "服务器内部错误"
+// @Security BearerAuth []
+// @Router /admin/packages/{id}/versions [post]
 func (h *PackageHandler) UploadVersion(c *gin.Context) {
 	packageID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -211,6 +312,18 @@ func (h *PackageHandler) UploadVersion(c *gin.Context) {
 }
 
 // DeleteVersion 删除版本
+// @Summary 删除版本
+// @Description 删除指定的软件包版本
+// @Tags 管理员/版本管理
+// @Accept json
+// @Produce json
+// @Param id path int true "版本ID" minimum(1)
+// @Success 200 {object} response.Response "删除成功"
+// @Failure 400 {object} response.Response "无效的版本ID"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 404 {object} response.Response "版本不存在"
+// @Security BearerAuth []
+// @Router /admin/versions/{id} [delete]
 func (h *PackageHandler) DeleteVersion(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -227,6 +340,20 @@ func (h *PackageHandler) DeleteVersion(c *gin.Context) {
 }
 
 // GetLatestByCategory APP端：根据类别代码获取最新版本
+// @Summary 获取类别最新版本
+// @Description APP端根据类别代码获取该类别下软件包的最新版本信息，包含带签名的下载链接
+// @Tags APP端
+// @Accept json
+// @Produce json
+// @Param code path string true "类别代码" example("TYPE_WU_REN_JI")
+// @Success 200 {object} response.Response{data=map[string]interface{}} "最新版本信息"
+// @Failure 400 {object} response.Response "类别代码不能为空"
+// @Failure 401 {object} response.Response "认证失败"
+// @Failure 404 {object} response.Response "该类别下没有找到版本"
+// @Security SignatureAuth []
+// @Security TimestampAuth []
+// @Security SignatureValueAuth []
+// @Router /app/categories/{code}/latest [get]
 func (h *PackageHandler) GetLatestByCategory(c *gin.Context) {
 	code := c.Param("code")
 	if code == "" {
@@ -287,6 +414,22 @@ func (h *PackageHandler) GetLatestByCategory(c *gin.Context) {
 }
 
 // Download 下载软件包
+// @Summary 下载软件包
+// @Description APP端下载软件包版本文件，需要提供有效的下载令牌
+// @Tags APP端
+// @Accept json
+// @Produce octet-stream
+// @Param id path int true "版本ID" minimum(1)
+// @Param token query string true "下载令牌"
+// @Param expires query string true "过期时间戳"
+// @Success 200 {file} file "文件流"
+// @Failure 400 {object} response.Response "无效的版本ID或参数"
+// @Failure 401 {object} response.Response "下载令牌无效或已过期"
+// @Failure 404 {object} response.Response "版本不存在"
+// @Security SignatureAuth []
+// @Security TimestampAuth []
+// @Security SignatureValueAuth []
+// @Router /app/download/{id} [get]
 func (h *PackageHandler) Download(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -382,7 +525,20 @@ func (h *PackageHandler) Download(c *gin.Context) {
 	c.Header("Content-Type", "application/octet-stream")
 	c.FileAttachment(filePath, version.FileName)
 }
+
 // DownloadVersion 管理端下载版本（无需签名验证）
+// @Summary 管理端下载版本
+// @Description 管理员下载软件包版本文件，无需签名验证
+// @Tags 管理员/版本管理
+// @Accept json
+// @Produce octet-stream
+// @Param id path int true "版本ID" minimum(1)
+// @Success 200 {file} file "文件流"
+// @Failure 400 {object} response.Response "无效的版本ID"
+// @Failure 401 {object} response.Response "未认证"
+// @Failure 404 {object} response.Response "版本不存在"
+// @Security BearerAuth []
+// @Router /admin/versions/{id}/download [get]
 func (h *PackageHandler) DownloadVersion(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

@@ -1,0 +1,2834 @@
+definitions:
+  handler.CreateCategoryRequest:
+    properties:
+      description:
+        description: 描述信息（最大500字符）
+        example: 包含各类无人机飞行、遥控、管理相关应用软件
+        maxLength: 500
+        type: string
+      name:
+        description: 类别名称（必填，长度3-100字符）
+        example: 无人机应用
+        maxLength: 100
+        minLength: 3
+        type: string
+      sort_order:
+        description: 排序权重（数值越大越靠后）
+        example: 100
+        type: integer
+    required:
+    - name
+    type: object
+  handler.CreateMCPCredentialRequest:
+    properties:
+      description:
+        description: 描述信息 (最大200字符)
+        example: 用于AI助手访问MCP服务
+        maxLength: 200
+        type: string
+      expires_at:
+        description: 过期时间 (可选，不填表示永不过期)
+        example: "2026-12-31T23:59:59Z"
+        type: string
+      name:
+        description: 凭证名称 (必填，长度1-100)
+        example: AI助手凭证
+        maxLength: 100
+        minLength: 1
+        type: string
+      permission_level:
+        description: '权限级别 (必填，可选值: read_only, read_write)'
+        enum:
+        - read_only
+        - read_write
+        example: read_only
+        type: string
+    required:
+    - name
+    - permission_level
+    type: object
+  handler.LoginRequest:
+    properties:
+      password:
+        description: 密码
+        example: "123456"
+        format: password
+        type: string
+      username:
+        description: 用户名
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.LoginResponse:
+    properties:
+      expires_in:
+        description: Token过期时间(秒)
+        example: 86400
+        type: integer
+      refresh_token:
+        description: 刷新Token
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token:
+        description: JWT Token
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        description: 用户信息
+        properties:
+          id:
+            description: 用户ID
+            example: 1
+            type: integer
+          nickname:
+            description: 昵称
+            example: 管理员
+            type: string
+          role:
+            description: 角色
+            example: admin
+            type: string
+          username:
+            description: 用户名
+            example: admin
+            type: string
+        type: object
+    type: object
+  handler.MCPCredentialResponse:
+    properties:
+      app_key:
+        description: AppKey (应用标识)
+        example: ak_abc123def456
+        type: string
+      app_secret:
+        description: AppSecret (应用密钥，仅在创建/重新生成时返回)
+        example: sk_xyz789uvw012
+        type: string
+      created_at:
+        description: 创建时间
+        example: "2026-03-12 10:00:00"
+        type: string
+      created_by:
+        description: 创建人ID
+        example: 1
+        type: integer
+      description:
+        description: 描述信息
+        example: 用于AI助手访问MCP服务
+        type: string
+      expires_at:
+        description: 过期时间
+        example: "2026-12-31 23:59:59"
+        type: string
+      id:
+        description: 凭证ID
+        example: 1
+        type: integer
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      last_used_at:
+        description: 最后使用时间
+        example: "2026-03-12 10:30:00"
+        type: string
+      name:
+        description: 凭证名称
+        example: AI助手凭证
+        type: string
+      permission_level:
+        description: 权限级别 (read_only, read_write)
+        example: read_only
+        type: string
+      updated_at:
+        description: 更新时间
+        example: "2026-03-12 15:30:00"
+        type: string
+    type: object
+  handler.ProfileResponse:
+    properties:
+      email:
+        description: 邮箱
+        example: admin@example.com
+        type: string
+      id:
+        description: 用户ID
+        example: 1
+        type: integer
+      is_active:
+        description: 是否启用 (1:启用, 0:禁用)
+        example: 1
+        type: integer
+      nickname:
+        description: 昵称
+        example: 管理员
+        type: string
+      role:
+        description: 角色
+        example: admin
+        type: string
+      username:
+        description: 用户名
+        example: admin
+        type: string
+    type: object
+  handler.UpdateCategoryRequest:
+    properties:
+      description:
+        description: 描述信息（最大500字符）
+        example: 包含各类无人机飞行、遥控、管理相关应用软件
+        maxLength: 500
+        type: string
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      name:
+        description: 类别名称（长度3-100字符）
+        example: 无人机应用
+        maxLength: 100
+        minLength: 3
+        type: string
+      sort_order:
+        description: 排序权重（数值越大越靠后）
+        example: 100
+        type: integer
+    type: object
+  handler.UpdateMCPCredentialRequest:
+    properties:
+      description:
+        description: 描述信息 (最大200字符)
+        example: 更新后的描述
+        maxLength: 200
+        type: string
+      expires_at:
+        description: 过期时间
+        example: "2026-12-31T23:59:59Z"
+        type: string
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      name:
+        description: 凭证名称 (长度1-100)
+        example: AI助手凭证
+        maxLength: 100
+        minLength: 1
+        type: string
+      permission_level:
+        description: '权限级别 (可选值: read_only, read_write)'
+        enum:
+        - read_only
+        - read_write
+        example: read_write
+        type: string
+    type: object
+  handler.UserCreateRequest:
+    properties:
+      email:
+        description: 邮箱
+        example: zhangsan@example.com
+        type: string
+      nickname:
+        description: 昵称
+        example: 张三
+        type: string
+      password:
+        description: 密码 (必填，长度8-72，需符合复杂度要求)
+        example: Password@123
+        format: password
+        maxLength: 72
+        minLength: 8
+        type: string
+      role:
+        description: 角色 (admin/user)
+        example: user
+        type: string
+      username:
+        description: 用户名 (必填，长度3-50)
+        example: zhangsan
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handler.UserResetPasswordRequest:
+    properties:
+      password:
+        description: 新密码 (必填，长度8-72，需符合复杂度要求)
+        example: NewPassword@456
+        format: password
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - password
+    type: object
+  handler.UserUpdateRequest:
+    properties:
+      email:
+        description: 邮箱
+        example: lisi@example.com
+        type: string
+      is_active:
+        description: 是否激活
+        example: true
+        type: boolean
+      nickname:
+        description: 昵称
+        example: 李四
+        type: string
+      role:
+        description: 角色 (admin/user)
+        example: admin
+        type: string
+    type: object
+  model.AppKey:
+    properties:
+      app_key:
+        description: AppKey
+        example: abc123def456
+        type: string
+      app_name:
+        description: 应用名称
+        example: 移动客户端
+        type: string
+      created_at:
+        description: 创建时间
+        example: "2024-03-12T10:00:00Z"
+        type: string
+      description:
+        description: 描述
+        example: 用于移动APP的API访问密钥
+        type: string
+      id:
+        description: 主键ID
+        example: 1
+        type: integer
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      updated_at:
+        description: 更新时间
+        example: "2024-03-12T15:30:00Z"
+        type: string
+    type: object
+  model.Category:
+    properties:
+      code:
+        description: 类别代码 (自动生成的拼音代码)
+        example: TYPE_WU_REN_JI_YING_YONG
+        type: string
+      created_at:
+        description: 创建时间
+        example: "2024-03-12T10:00:00Z"
+        type: string
+      description:
+        description: 描述
+        example: 各类无人机相关应用程序
+        type: string
+      id:
+        description: 主键ID
+        example: 1
+        type: integer
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      name:
+        description: 类别名称
+        example: 无人机应用
+        type: string
+      packages:
+        description: 关联
+        items:
+          $ref: '#/definitions/model.Package'
+        type: array
+      sort_order:
+        description: 排序值
+        example: 10
+        type: integer
+      updated_at:
+        description: 更新时间
+        example: "2024-03-12T15:30:00Z"
+        type: string
+    type: object
+  model.MCPCredential:
+    properties:
+      app_key:
+        description: AppKey
+        example: mcp_abc123def456
+        type: string
+      created_at:
+        description: 创建时间
+        example: "2024-03-12T10:00:00Z"
+        type: string
+      created_by:
+        description: 创建者ID
+        example: 1
+        type: integer
+      description:
+        description: 描述
+        example: 用于AI助手集成的MCP凭证
+        type: string
+      expires_at:
+        description: 过期时间
+        example: "2025-03-12T00:00:00Z"
+        type: string
+      id:
+        description: 主键ID
+        example: 1
+        type: integer
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      last_used_at:
+        description: 最后使用时间
+        example: "2024-03-12T15:30:00Z"
+        type: string
+      name:
+        description: 凭证名称
+        example: AI助手集成
+        type: string
+      permission_level:
+        description: 权限级别
+        example: read_only
+        type: string
+      updated_at:
+        description: 更新时间
+        example: "2024-03-12T15:30:00Z"
+        type: string
+    type: object
+  model.Package:
+    properties:
+      category:
+        allOf:
+        - $ref: '#/definitions/model.Category'
+        description: 关联
+      category_id:
+        description: 类别ID
+        example: 1
+        type: integer
+      created_at:
+        description: 创建时间
+        example: "2024-03-12T10:00:00Z"
+        type: string
+      created_by:
+        description: 创建者ID
+        example: 1
+        type: integer
+      creator:
+        $ref: '#/definitions/model.User'
+      description:
+        description: 描述
+        example: 专业级无人机飞行控制系统
+        type: string
+      id:
+        description: 主键ID
+        example: 1
+        type: integer
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      latest_version:
+        $ref: '#/definitions/model.Version'
+      name:
+        description: 软件包名称
+        example: 无人机控制系统
+        type: string
+      updated_at:
+        description: 更新时间
+        example: "2024-03-12T15:30:00Z"
+        type: string
+      versions:
+        items:
+          $ref: '#/definitions/model.Version'
+        type: array
+    type: object
+  model.User:
+    properties:
+      created_at:
+        description: 创建时间
+        example: "2024-01-01T08:00:00Z"
+        type: string
+      email:
+        description: 邮箱
+        example: admin@example.com
+        type: string
+      id:
+        description: 主键ID
+        example: 1
+        type: integer
+      is_active:
+        description: 是否启用
+        example: true
+        type: boolean
+      last_login_at:
+        description: 最后登录时间
+        example: "2024-03-12T15:30:00Z"
+        type: string
+      last_login_ip:
+        description: 最后登录IP
+        example: 192.168.1.100
+        type: string
+      nickname:
+        description: 昵称
+        example: 系统管理员
+        type: string
+      role:
+        description: 角色
+        example: admin
+        type: string
+      updated_at:
+        description: 更新时间
+        example: "2024-03-12T15:30:00Z"
+        type: string
+      username:
+        description: 用户名
+        example: admin
+        type: string
+    type: object
+  model.Version:
+    properties:
+      changelog:
+        description: |-
+          版本信息
+          更新日志
+        example: |-
+          修复关键安全漏洞
+          优化性能
+        type: string
+      created_at:
+        description: 创建时间
+        example: "2024-03-12T15:45:00Z"
+        type: string
+      created_by:
+        description: |-
+          审计
+          创建者ID
+        example: 1
+        type: integer
+      creator:
+        $ref: '#/definitions/model.User'
+      download_count:
+        description: |-
+          统计
+          下载次数
+        example: 1523
+        type: integer
+      file_hash:
+        description: 文件SHA256哈希
+        example: a1b2c3d4e5f6...
+        type: string
+      file_name:
+        description: 原始文件名
+        example: drone-control-2.1.0.zip
+        type: string
+      file_size:
+        description: 文件大小 (字节)
+        example: 15728640
+        type: integer
+      force_upgrade:
+        description: |-
+          升级控制
+          是否强制升级
+        example: false
+        type: boolean
+      id:
+        description: 主键ID
+        example: 1
+        type: integer
+      is_latest:
+        description: 是否最新版本
+        example: true
+        type: boolean
+      is_stable:
+        description: 是否稳定版
+        example: true
+        type: boolean
+      min_version:
+        description: 最低兼容版本
+        example: 2.0.0
+        type: string
+      package:
+        allOf:
+        - $ref: '#/definitions/model.Package'
+        description: 关联
+      package_id:
+        description: 软件包ID
+        example: 1
+        type: integer
+      published_at:
+        description: 发布时间
+        example: "2024-03-12T16:00:00Z"
+        type: string
+      release_notes:
+        description: 发布说明
+        example: 本次更新修复了多个已知问题
+        type: string
+      updated_at:
+        description: 更新时间
+        example: "2024-03-12T16:00:00Z"
+        type: string
+      version:
+        description: 版本号
+        example: 2.1.0
+        type: string
+      version_code:
+        description: 版本代码 (数值)
+        example: 20100
+        type: integer
+    type: object
+  response.PageData:
+    properties:
+      list: {}
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+  service.AppKeyResponse:
+    properties:
+      app_key:
+        type: string
+      app_name:
+        type: string
+      app_secret:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      updated_at:
+        type: string
+    type: object
+  service.ChangePasswordRequest:
+    properties:
+      new_password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  service.CreateAppKeyRequest:
+    properties:
+      app_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      description:
+        maxLength: 200
+        type: string
+    required:
+    - app_name
+    type: object
+  service.UpdateAppKeyRequest:
+    properties:
+      app_name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      description:
+        maxLength: 200
+        type: string
+      is_active:
+        type: boolean
+    type: object
+  service.UpdatePackageRequest:
+    properties:
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /admin/appkeys:
+    get:
+      consumes:
+      - application/json
+      description: 获取AppKey分页列表，用于管理APP端认证密钥
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回AppKey分页列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageData'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.AppKey'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取AppKey列表
+      tags:
+      - 管理员/AppKey管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的APP认证密钥，系统自动生成AppKey和AppSecret。注意：AppSecret仅在创建时返回一次，请妥善保存。
+      parameters:
+      - description: 创建AppKey请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateAppKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功，返回AppKey信息（包含AppSecret）
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.AppKeyResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 创建AppKey
+      tags:
+      - 管理员/AppKey管理
+  /admin/appkeys/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的AppKey，删除后该密钥将无法使用
+      parameters:
+      - description: AppKey ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 请求参数错误，无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: AppKey不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 删除AppKey
+      tags:
+      - 管理员/AppKey管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取单个AppKey的详细信息
+      parameters:
+      - description: AppKey ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回AppKey详情
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AppKey'
+              type: object
+        "400":
+          description: 请求参数错误，无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: AppKey不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取AppKey详情
+      tags:
+      - 管理员/AppKey管理
+    put:
+      consumes:
+      - application/json
+      description: 更新AppKey信息，可修改应用名称、描述和启用状态
+      parameters:
+      - description: AppKey ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 更新AppKey请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateAppKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功，返回更新后的AppKey信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.AppKey'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: AppKey不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 更新AppKey
+      tags:
+      - 管理员/AppKey管理
+  /admin/appkeys/{id}/regenerate:
+    post:
+      consumes:
+      - application/json
+      description: 为指定AppKey重新生成AppSecret，旧的Secret将立即失效。注意：新的AppSecret仅在此次返回，请妥善保存。
+      parameters:
+      - description: AppKey ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 重新生成成功，返回新的AppSecret
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.AppKeyResponse'
+              type: object
+        "400":
+          description: 请求参数错误，无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: AppKey不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 重新生成AppSecret
+      tags:
+      - 管理员/AppKey管理
+  /admin/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户通过用户名和密码完成身份认证，成功后返回JWT token和用户信息
+      parameters:
+      - description: 登录请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功，返回token和用户信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.LoginResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 认证失败，用户名或密码错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户登录
+      tags:
+      - 管理员/认证
+  /admin/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: 用户登出系统，由于JWT是无状态认证，服务端不需要特殊处理。客户端应删除本地存储的token。
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登出成功
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户登出
+      tags:
+      - 管理员/认证
+  /admin/auth/password:
+    put:
+      consumes:
+      - application/json
+      description: 用户修改自己的登录密码，需要提供旧密码和新密码。新密码长度要求8-72个字符。
+      parameters:
+      - description: 修改密码请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 密码修改成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 请求参数错误或旧密码不正确
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证，需要有效的JWT token
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 修改当前用户密码
+      tags:
+      - 管理员/认证
+  /admin/auth/profile:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前已登录用户的详细信息，包括用户名、昵称、邮箱、角色等
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回用户信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.ProfileResponse'
+              type: object
+        "401":
+          description: 未认证，需要有效的JWT token
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取当前登录用户信息
+      tags:
+      - 管理员/认证
+  /admin/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 使用刷新令牌获取新的访问令牌，刷新令牌通过请求头X-Refresh-Token传递
+      parameters:
+      - description: 刷新令牌
+        in: header
+        name: X-Refresh-Token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 刷新成功，返回新的访问令牌
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "401":
+          description: 刷新令牌无效或已过期
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 刷新访问令牌
+      tags:
+      - 管理员/认证
+  /admin/categories:
+    get:
+      consumes:
+      - application/json
+      description: 获取软件类别的分页列表，支持按页码和每页数量进行分页查询
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 50
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回类别分页列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageData'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Category'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取类别分页列表
+      tags:
+      - 管理员/类别管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的软件类别，系统会自动根据中文名称生成拼音代码（如：无人机 -> TYPE_WU_REN_JI）
+      parameters:
+      - description: 创建类别的请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功，返回新创建的类别信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Category'
+              type: object
+        "400":
+          description: 请求参数错误，例如参数未满足约束条件或类别名称已存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证，需要有效的管理员Token
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: 权限不足，当前用户角色不允许此操作
+          schema:
+            $ref: '#/definitions/response.Response'
+        "409":
+          description: 冲突，相同名称的类别已存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 创建软件类别
+      tags:
+      - 管理员/类别管理
+  /admin/categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定ID的软件类别，软删除操作
+      parameters:
+      - description: 类别ID
+        example: 1
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 请求参数错误，无效的类别ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证，需要有效的管理员Token
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: 权限不足，当前用户角色不允许此操作
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 类别不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 删除软件类别
+      tags:
+      - 管理员/类别管理
+    get:
+      consumes:
+      - application/json
+      description: 通过ID获取指定软件类别的详细信息
+      parameters:
+      - description: 类别ID
+        example: 1
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回类别详细信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Category'
+              type: object
+        "400":
+          description: 请求参数错误，无效的类别ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 类别不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 根据ID获取类别详情
+      tags:
+      - 管理员/类别管理
+    put:
+      consumes:
+      - application/json
+      description: 更新指定ID的软件类别信息，如果更新名称则系统会自动重新生成拼音代码
+      parameters:
+      - description: 类别ID
+        example: 1
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 更新类别的请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功，返回更新后的类别信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Category'
+              type: object
+        "400":
+          description: 请求参数错误，无效的类别ID或参数不满足约束条件
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证，需要有效的管理员Token
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: 权限不足，当前用户角色不允许此操作
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 类别不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "409":
+          description: 冲突，相同名称的类别已存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 更新软件类别
+      tags:
+      - 管理员/类别管理
+  /admin/categories/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: 通过类别代码获取指定软件类别的详细信息
+      parameters:
+      - description: 类别代码
+        example: TYPE_WU_REN_JI_YING_YONG
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回类别详细信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Category'
+              type: object
+        "400":
+          description: 请求参数错误，代码不能为空
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 类别不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 根据代码获取类别详情
+      tags:
+      - 管理员/类别管理
+  /admin/mcp-credentials:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有MCP服务认证凭证的分页列表，包含AppKey、权限级别等信息
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回凭证分页列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageData'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.MCPCredential'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取MCP凭证分页列表
+      tags:
+      - 管理员/MCP凭证管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的MCP服务认证凭证，系统自动生成AppKey和AppSecret。注意：AppSecret仅在创建时返回一次，请妥善保存。
+      parameters:
+      - description: 创建凭证请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateMCPCredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功，返回凭证信息（含AppSecret）
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.MCPCredentialResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 创建MCP凭证
+      tags:
+      - 管理员/MCP凭证管理
+  /admin/mcp-credentials/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的MCP服务认证凭证，删除后该凭证将无法继续使用
+      parameters:
+      - description: 凭证ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 凭证不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 删除MCP凭证
+      tags:
+      - 管理员/MCP凭证管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取指定MCP凭证的详细信息
+      parameters:
+      - description: 凭证ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回凭证详情
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.MCPCredential'
+              type: object
+        "400":
+          description: 无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 凭证不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取单个MCP凭证详情
+      tags:
+      - 管理员/MCP凭证管理
+    put:
+      consumes:
+      - application/json
+      description: 更新指定MCP凭证的信息，如名称、权限级别、描述、启用状态等
+      parameters:
+      - description: 凭证ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 更新凭证请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateMCPCredentialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功，返回更新后的凭证信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.MCPCredential'
+              type: object
+        "400":
+          description: 请求参数错误或ID无效
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 凭证不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 更新MCP凭证
+      tags:
+      - 管理员/MCP凭证管理
+  /admin/mcp-credentials/{id}/regenerate:
+    post:
+      consumes:
+      - application/json
+      description: 为指定MCP凭证重新生成AppSecret，旧的Secret将立即失效。注意：新的AppSecret仅在本次返回，请妥善保存。
+      parameters:
+      - description: 凭证ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 重新生成成功，返回新凭证信息（含新AppSecret）
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.MCPCredentialResponse'
+              type: object
+        "400":
+          description: 无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 凭证不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 重新生成AppSecret
+      tags:
+      - 管理员/MCP凭证管理
+  /admin/packages:
+    get:
+      consumes:
+      - application/json
+      description: 获取软件包列表，支持按类别筛选和分页
+      parameters:
+      - description: 类别ID
+        in: query
+        minimum: 0
+        name: category_id
+        type: integer
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 软件包列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageData'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Package'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取软件包分页列表
+      tags:
+      - 管理员/软件包管理
+    post:
+      consumes:
+      - multipart/form-data
+      description: 创建新的软件包并上传第一个版本文件
+      parameters:
+      - description: 软件包文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 类别ID
+        in: formData
+        name: category_id
+        required: true
+        type: string
+      - description: 版本号
+        example: '"1.0.0"'
+        in: formData
+        name: version
+        required: true
+        type: string
+      - description: 软件包描述
+        in: formData
+        name: description
+        type: string
+      - description: 更新日志
+        in: formData
+        name: changelog
+        type: string
+      - default: false
+        description: 是否强制升级
+        in: formData
+        name: force_upgrade
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功，返回软件包和版本信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 创建软件包
+      tags:
+      - 管理员/软件包管理
+  /admin/packages/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的软件包及其所有版本
+      parameters:
+      - description: 软件包ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 软件包不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 删除软件包
+      tags:
+      - 管理员/软件包管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取单个软件包的详细信息
+      parameters:
+      - description: 软件包ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 软件包详情
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Package'
+              type: object
+        "400":
+          description: 无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 软件包不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取软件包详情
+      tags:
+      - 管理员/软件包管理
+    put:
+      consumes:
+      - application/json
+      description: 更新软件包信息
+      parameters:
+      - description: 软件包ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdatePackageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Package'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 软件包不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 更新软件包
+      tags:
+      - 管理员/软件包管理
+  /admin/packages/{id}/versions:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定软件包的所有版本列表，支持分页
+      parameters:
+      - description: 软件包ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 版本列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageData'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.Version'
+                        type: array
+                    type: object
+              type: object
+        "400":
+          description: 无效的软件包ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取版本列表
+      tags:
+      - 管理员/版本管理
+    post:
+      consumes:
+      - multipart/form-data
+      description: 为指定软件包上传新版本文件
+      parameters:
+      - description: 软件包ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 版本文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 版本号
+        example: '"1.0.1"'
+        in: formData
+        name: version
+        required: true
+        type: string
+      - description: 更新日志
+        in: formData
+        name: changelog
+        type: string
+      - description: 发布说明
+        in: formData
+        name: release_notes
+        type: string
+      - description: 最低兼容版本
+        example: '"1.0.0"'
+        in: formData
+        name: min_version
+        type: string
+      - default: false
+        description: 是否强制升级
+        in: formData
+        name: force_upgrade
+        type: boolean
+      - default: true
+        description: 是否稳定版
+        in: formData
+        name: is_stable
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 上传成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Version'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 软件包不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 上传新版本
+      tags:
+      - 管理员/版本管理
+  /admin/stats/category:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定日期范围内各软件类别的下载量分布
+      parameters:
+      - description: '开始日期 (格式: 2006-01-02)'
+        example: '"2024-03-01"'
+        in: query
+        name: start_date
+        type: string
+      - description: '结束日期 (格式: 2006-01-02)'
+        example: '"2024-03-12"'
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回类别统计数据，包含start_date、end_date和stats字段
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误，日期格式不正确
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取按类别统计的下载量
+      tags:
+      - 管理员/统计
+  /admin/stats/daily:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定日期的下载次数统计，可按类别筛选
+      parameters:
+      - description: '日期 (格式: 2006-01-02)'
+        example: '"2024-03-12"'
+        in: query
+        name: date
+        type: string
+      - description: 类别ID，为0表示全部类别
+        example: 1
+        in: query
+        name: category_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回每日下载统计，包含date和count字段
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误，日期格式不正确
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取每日下载统计
+      tags:
+      - 管理员/统计
+  /admin/stats/monthly:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定年月的下载次数统计，可按类别筛选
+      parameters:
+      - description: 年份
+        example: 2024
+        in: query
+        minimum: 2000
+        name: year
+        type: integer
+      - description: 月份
+        example: 3
+        in: query
+        maximum: 12
+        minimum: 1
+        name: month
+        type: integer
+      - description: 类别ID，为0表示全部类别
+        example: 1
+        in: query
+        name: category_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回月度下载统计，包含year、month、count和category_id字段
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取月度下载统计
+      tags:
+      - 管理员/统计
+  /admin/stats/overview:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统下载统计的概览信息，包含今日下载量、本月下载量、本年下载量和按类别的下载分布
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回统计概览，包含today、monthly、yearly和by_category字段
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "401":
+          description: 未授权访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取统计概览
+      tags:
+      - 管理员/统计
+  /admin/stats/trend:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定日期范围内的每日下载趋势数据，可按类别筛选
+      parameters:
+      - description: '开始日期 (格式: 2006-01-02)'
+        example: '"2024-03-01"'
+        in: query
+        name: start_date
+        type: string
+      - description: '结束日期 (格式: 2006-01-02)'
+        example: '"2024-03-12"'
+        in: query
+        name: end_date
+        type: string
+      - description: 类别ID，为0表示全部类别
+        example: 1
+        in: query
+        name: category_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回下载趋势数据，包含start_date、end_date和trend字段
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误，日期格式不正确
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取每日下载趋势
+      tags:
+      - 管理员/统计
+  /admin/stats/yearly:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定年份的下载次数统计，可按类别筛选
+      parameters:
+      - description: 年份
+        example: 2024
+        in: query
+        minimum: 2000
+        name: year
+        type: integer
+      - description: 类别ID，为0表示全部类别
+        example: 1
+        in: query
+        name: category_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回年度下载统计，包含year、count和category_id字段
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未授权访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取年度下载统计
+      tags:
+      - 管理员/统计
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: 获取管理员用户分页列表，支持分页参数
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回用户分页列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageData'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.User'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取用户分页列表
+      tags:
+      - 管理员/用户管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的管理员用户，用户名必须唯一，密码需符合复杂度要求（至少8位，包含大小写字母、数字和特殊字符）
+      parameters:
+      - description: 创建用户请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功，返回新用户信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "400":
+          description: 请求参数错误或用户名已存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 创建用户
+      tags:
+      - 管理员/用户管理
+  /admin/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的管理员用户，不允许删除自己
+      parameters:
+      - description: 用户ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 请求参数错误或尝试删除自己
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 删除用户
+      tags:
+      - 管理员/用户管理
+    get:
+      consumes:
+      - application/json
+      description: 根据用户ID获取用户详细信息
+      parameters:
+      - description: 用户ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回用户详情
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取用户详情
+      tags:
+      - 管理员/用户管理
+    put:
+      consumes:
+      - application/json
+      description: 更新指定用户的信息，包括昵称、邮箱、角色和激活状态
+      parameters:
+      - description: 用户ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 更新用户请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功，返回更新后的用户信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 更新用户信息
+      tags:
+      - 管理员/用户管理
+  /admin/users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: 重置指定用户的密码，新密码需符合复杂度要求（至少8位，包含大小写字母、数字和特殊字符）
+      parameters:
+      - description: 用户ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 重置密码请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 重置成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 请求参数错误或密码不符合复杂度要求
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 重置用户密码
+      tags:
+      - 管理员/用户管理
+  /admin/versions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定的软件包版本
+      parameters:
+      - description: 版本ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 无效的版本ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 版本不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 删除版本
+      tags:
+      - 管理员/版本管理
+  /admin/versions/{id}/download:
+    get:
+      consumes:
+      - application/json
+      description: 管理员下载软件包版本文件，无需签名验证
+      parameters:
+      - description: 版本ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: 文件流
+          schema:
+            type: file
+        "400":
+          description: 无效的版本ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 版本不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 管理端下载版本
+      tags:
+      - 管理员/版本管理
+  /app/categories:
+    get:
+      consumes:
+      - application/json
+      description: APP端获取所有启用状态的软件类别，用于展示可用的软件种类
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回启用的类别列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Category'
+                  type: array
+              type: object
+        "401":
+          description: 认证失败，AppKey或签名验证不正确
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'SignatureAuth ':
+        - ""
+      - 'TimestampAuth ':
+        - ""
+      - 'SignatureValueAuth ':
+        - ""
+      summary: 获取所有启用的类别列表
+      tags:
+      - APP端
+  /app/categories/{code}/latest:
+    get:
+      consumes:
+      - application/json
+      description: APP端根据类别代码获取该类别下软件包的最新版本信息，包含带签名的下载链接
+      parameters:
+      - description: 类别代码
+        example: '"TYPE_WU_REN_JI"'
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 最新版本信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 类别代码不能为空
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 该类别下没有找到版本
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'SignatureAuth ':
+        - ""
+      - 'TimestampAuth ':
+        - ""
+      - 'SignatureValueAuth ':
+        - ""
+      summary: 获取类别最新版本
+      tags:
+      - APP端
+  /app/download/{id}:
+    get:
+      consumes:
+      - application/json
+      description: APP端下载软件包版本文件，需要提供有效的下载令牌
+      parameters:
+      - description: 版本ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 下载令牌
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: 过期时间戳
+        in: query
+        name: expires
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: 文件流
+          schema:
+            type: file
+        "400":
+          description: 无效的版本ID或参数
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 下载令牌无效或已过期
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 版本不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'SignatureAuth ':
+        - ""
+      - 'TimestampAuth ':
+        - ""
+      - 'SignatureValueAuth ':
+        - ""
+      summary: 下载软件包
+      tags:
+      - APP端
+swagger: "2.0"

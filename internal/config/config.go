@@ -49,9 +49,10 @@ type JWTConfig struct {
 }
 
 type StorageConfig struct {
-	Type        string `yaml:"type"` // local
-	Path        string `yaml:"path"`
-	MaxFileSize int64  `yaml:"max_file_size"` // bytes
+	Type                      string `yaml:"type"` // local
+	Path                      string `yaml:"path"`
+	MaxFileSize               int64  `yaml:"max_file_size"`                // bytes
+	ExternalDownloadURLPrefix string `yaml:"external_download_url_prefix"` // 外部下载URL前缀，如 http://cdn.example.com/dd
 }
 
 type LogConfig struct {

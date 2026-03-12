@@ -6,38 +6,60 @@ import (
 
 	"gorm.io/gorm"
 )
+
 // Version 软件版本
+// swagger:model Version
 type Version struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	PackageID   uint   `gorm:"not null;index" json:"package_id"`
-	Version     string `gorm:"size:50;not null" json:"version"`    // 版本号字符串 1.0.0
-	VersionCode int    `gorm:"not null;index" json:"version_code"` // 版本号数值 10000
+	// 主键ID
+	ID uint `gorm:"primaryKey" json:"id" example:"1"`
+	// 软件包ID
+	PackageID uint `gorm:"not null;index" json:"package_id" example:"1"`
+	// 版本号
+	Version string `gorm:"size:50;not null" json:"version" example:"2.1.0"`
+	// 版本代码 (数值)
+	VersionCode int `gorm:"not null;index" json:"version_code" example:"20100"`
 
 	// 文件信息
-	FilePath string `gorm:"size:500;not null" json:"-"`         // 存储路径（内部）
-	FileName string `gorm:"size:255;not null" json:"file_name"` // 原始文件名
-	FileSize int64  `gorm:"not null" json:"file_size"`          // 文件大小
-	FileHash string `gorm:"size:64;not null" json:"file_hash"`  // SHA256
+	// 文件存储路径 (内部使用)
+	FilePath string `gorm:"size:500;not null" json:"-"`
+	// 原始文件名
+	FileName string `gorm:"size:255;not null" json:"file_name" example:"drone-control-2.1.0.zip"`
+	// 文件大小 (字节)
+	FileSize int64 `gorm:"not null" json:"file_size" example:"15728640"`
+	// 文件SHA256哈希
+	FileHash string `gorm:"size:64;not null" json:"file_hash" example:"a1b2c3d4e5f6..."`
 
 	// 版本信息
-	Changelog    string `gorm:"type:text" json:"changelog"`     // 更新日志
-	ReleaseNotes string `gorm:"type:text" json:"release_notes"` // 发布说明
-	MinVersion   string `gorm:"size:50" json:"min_version"`     // 最低兼容版本
+	// 更新日志
+	Changelog string `gorm:"type:text" json:"changelog" example:"修复关键安全漏洞\n优化性能"`
+	// 发布说明
+	ReleaseNotes string `gorm:"type:text" json:"release_notes" example:"本次更新修复了多个已知问题"`
+	// 最低兼容版本
+	MinVersion string `gorm:"size:50" json:"min_version" example:"2.0.0"`
 
 	// 升级控制
-	ForceUpgrade bool `gorm:"default:false" json:"force_upgrade"` // 强制升级
-	IsLatest     bool `gorm:"default:false" json:"is_latest"`     // 最新版本
-	IsStable     bool `gorm:"default:true" json:"is_stable"`      // 稳定版
+	// 是否强制升级
+	ForceUpgrade bool `gorm:"default:false" json:"force_upgrade" example:"false"`
+	// 是否最新版本
+	IsLatest bool `gorm:"default:false" json:"is_latest" example:"true"`
+	// 是否稳定版
+	IsStable bool `gorm:"default:true" json:"is_stable" example:"true"`
 
 	// 统计
-	DownloadCount int `gorm:"default:0" json:"download_count"`
+	// 下载次数
+	DownloadCount int `gorm:"default:0" json:"download_count" example:"1523"`
 
 	// 审计
-	CreatedBy   uint           `gorm:"not null" json:"created_by"`
-	PublishedAt *time.Time     `json:"published_at"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	// 创建者ID
+	CreatedBy uint `gorm:"not null" json:"created_by" example:"1"`
+	// 发布时间
+	PublishedAt *time.Time `json:"published_at,omitempty" example:"2024-03-12T16:00:00Z"`
+	// 创建时间
+	CreatedAt time.Time `json:"created_at" example:"2024-03-12T15:45:00Z"`
+	// 更新时间
+	UpdatedAt time.Time `json:"updated_at" example:"2024-03-12T16:00:00Z"`
+	// 删除时间
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// 关联
 	Package *Package `gorm:"foreignKey:PackageID" json:"package,omitempty"`

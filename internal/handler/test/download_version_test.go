@@ -103,7 +103,7 @@ func TestDownloadVersion_Success(t *testing.T) {
 	categoryRepo := repository.NewCategoryRepository(db)
 	statsRepo := repository.NewStatsRepository(db)
 	appKeyRepo := repository.NewAppKeyRepository(db)
-	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	h := handler.NewPackageHandler(packageService, statsRepo, appKeyRepo)
 
 	jwtService := jwt.New("test-secret", time.Hour, time.Hour*24)
@@ -164,7 +164,7 @@ func TestDownloadVersion_Unauthorized(t *testing.T) {
 	categoryRepo := repository.NewCategoryRepository(db)
 	statsRepo := repository.NewStatsRepository(db)
 	appKeyRepo := repository.NewAppKeyRepository(db)
-	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	h := handler.NewPackageHandler(packageService, statsRepo, appKeyRepo)
 
 	jwtService := jwt.New("test-secret", time.Hour, time.Hour*24)
@@ -194,7 +194,7 @@ func TestDownloadVersion_InvalidID(t *testing.T) {
 	categoryRepo := repository.NewCategoryRepository(db)
 	statsRepo := repository.NewStatsRepository(db)
 	appKeyRepo := repository.NewAppKeyRepository(db)
-	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	h := handler.NewPackageHandler(packageService, statsRepo, appKeyRepo)
 
 	jwtService := jwt.New("test-secret", time.Hour, time.Hour*24)
@@ -226,7 +226,7 @@ func TestDownloadVersion_VersionNotFound(t *testing.T) {
 	categoryRepo := repository.NewCategoryRepository(db)
 	statsRepo := repository.NewStatsRepository(db)
 	appKeyRepo := repository.NewAppKeyRepository(db)
-	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080")
+	packageService := service.NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	h := handler.NewPackageHandler(packageService, statsRepo, appKeyRepo)
 
 	jwtService := jwt.New("test-secret", time.Hour, time.Hour*24)
