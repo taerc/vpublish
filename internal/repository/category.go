@@ -77,3 +77,9 @@ func (r *CategoryRepository) ExistsByCode(ctx context.Context, code string) (boo
 	err := r.db.WithContext(ctx).Model(&model.Category{}).Where("code = ?", code).Count(&count).Error
 	return count > 0, err
 }
+
+func (r *CategoryRepository) CountPackagesByCategory(ctx context.Context, categoryID uint) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&model.Package{}).Where("category_id = ?", categoryID).Count(&count).Error
+	return count, err
+}

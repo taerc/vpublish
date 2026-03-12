@@ -13,6 +13,7 @@ var (
 	ErrCategoryNotFound      = errors.New("category not found")
 	ErrCategoryAlreadyExists = errors.New("category already exists")
 	ErrCategoryCodeExists    = errors.New("category code already exists")
+	ErrCategoryHasPackages   = errors.New("category has packages, cannot delete")
 )
 
 type CategoryService struct {
@@ -102,6 +103,13 @@ func (s *CategoryService) Update(ctx context.Context, id uint, req *UpdateCatego
 }
 
 func (s *CategoryService) Delete(ctx context.Context, id uint) error {
+	count, err := s.categoryRepo.CountPackagesByCategory(ctx, id)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return ErrCategoryHasPackages
+	}
 	return s.categoryRepo.Delete(ctx, id)
 }
 

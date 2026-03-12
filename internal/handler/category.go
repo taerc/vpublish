@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -265,6 +266,10 @@ func (h *CategoryHandler) Delete(c *gin.Context) {
 	}
 
 	if err := h.categoryService.Delete(c.Request.Context(), uint(id)); err != nil {
+		if errors.Is(err, service.ErrCategoryHasPackages) {
+			response.Error(c, 409, err.Error())
+			return
+		}
 		response.Error(c, 400, err.Error())
 		return
 	}

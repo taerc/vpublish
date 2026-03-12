@@ -247,3 +247,94 @@ func TestPackageRepository_Delete(t *testing.T) {
 		t.Error("expected error when getting deleted package")
 	}
 }
+
+// TestPackageRepository_PreloadSoftDeletedCategory tests that Preload with Unscoped
+// returns the category object even if it was soft-deleted
+func TestPackageRepository_PreloadSoftDeletedCategory(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("failed to connect database: %v", err)
+	}
+
+	err = db.AutoMigrate(&model.Category{}, &model.Package{}, &model.User{})
+	if err != nil {
+		t.Fatalf("failed to migrate: %v", err)
+	}
+
+	// Create test data
+	user := &model.User{
+		Username:     "testuser",
+		PasswordHash: "hash",
+		Role:         "admin",
+		IsActive:     true,
+	}
+	db.Create(user)
+
+	category := &model.Category{
+		Name:     "TestCategory",
+		Code:     "TEST_CAT",
+		IsActive: true,
+	}
+	db.Create(category)
+
+	pkg := &model.Package{
+		CategoryID:  category.ID,
+		Name:        "TestPackage",
+		Description: "Test",
+		IsActive:    true,
+		CreatedBy:   user.ID,
+	}
+	db.Create(pkg)
+
+	// Soft-delete the category
+	db.Delete(&model.Category{}, category.ID)
+
+	// Verify category is soft-deleted
+	var catCount int64
+	db.Model(&model.Category{}).Where("id = ?", category.ID).Count(&catCount)
+	if catCount != 0 {
+		t.Error("category should be soft-deleted and not count in normal query")
+	}
+
+	// Now test that Preload with Unscoped returns the category
+	repo := NewPackageRepository(db)
+	ctx := context.Background()
+
+	// Test GetByID
+	found, err := repo.GetByID(ctx, pkg.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+
+	if found.Category == nil {
+		t.Error("Category should be loaded even though it's soft-deleted")
+	} else {
+		if found.Category.Name != "TestCategory" {
+			t.Errorf("expected category name 'TestCategory', got %s", found.Category.Name)
+		}
+		t.Logf("SUCCESS: Category loaded: %+v", found.Category)
+	}
+
+	// Test List
+	packages, total, err := repo.List(ctx, 0, 1, 10)
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+
+	if total != 1 {
+		t.Errorf("expected total 1, got %d", total)
+	}
+
+	if len(packages) != 1 {
+		t.Fatalf("expected 1 package, got %d", len(packages))
+	}
+
+	if packages[0].Category == nil {
+		t.Error("Category should be loaded in List even though it's soft-deleted")
+	} else {
+		if packages[0].Category.Name != "TestCategory" {
+			t.Errorf("expected category name 'TestCategory', got %s", packages[0].Category.Name)
+		}
+		t.Logf("SUCCESS: Category loaded in List: %+v", packages[0].Category)
+	}
+}

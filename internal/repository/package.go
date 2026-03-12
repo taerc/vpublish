@@ -29,7 +29,14 @@ func (r *PackageRepository) Delete(ctx context.Context, id uint) error {
 
 func (r *PackageRepository) GetByID(ctx context.Context, id uint) (*model.Package, error) {
 	var pkg model.Package
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Creator").First(&pkg, id).Error
+	// Use Unscoped() to include soft-deleted categories in the preload
+	// This ensures the category object is returned even if it was soft-deleted
+	err := r.db.WithContext(ctx).
+		Preload("Category", func(db *gorm.DB) *gorm.DB {
+			return db.Unscoped()
+		}).
+		Preload("Creator").
+		First(&pkg, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +47,13 @@ func (r *PackageRepository) List(ctx context.Context, categoryID uint, page, pag
 	var packages []model.Package
 	var total int64
 
-	db := r.db.WithContext(ctx).Model(&model.Package{}).Preload("Category").Preload("Creator")
+	// Use Unscoped() to include soft-deleted categories in the preload
+	// This ensures the category object is returned even if it was soft-deleted
+	db := r.db.WithContext(ctx).Model(&model.Package{}).
+		Preload("Category", func(db *gorm.DB) *gorm.DB {
+			return db.Unscoped()
+		}).
+		Preload("Creator")
 	if categoryID > 0 {
 		db = db.Where("category_id = ?", categoryID)
 	}
@@ -68,19 +81,37 @@ func (r *PackageRepository) List(ctx context.Context, categoryID uint, page, pag
 
 func (r *PackageRepository) ListByCategory(ctx context.Context, categoryID uint) ([]model.Package, error) {
 	var packages []model.Package
-	err := r.db.WithContext(ctx).Where("category_id = ? AND is_active = ?", categoryID, true).Find(&packages).Error
+	// Use Unscoped() to include soft-deleted categories
+	err := r.db.WithContext(ctx).
+		Where("category_id = ? AND is_active = ?", categoryID, true).
+		Preload("Category", func(db *gorm.DB) *gorm.DB {
+			return db.Unscoped()
+		}).
+		Find(&packages).Error
 	return packages, err
 }
 
 func (r *PackageRepository) ListActive(ctx context.Context) ([]model.Package, error) {
 	var packages []model.Package
-	err := r.db.WithContext(ctx).Where("is_active = ?", true).Preload("Category").Find(&packages).Error
+	// Use Unscoped() to include soft-deleted categories
+	err := r.db.WithContext(ctx).
+		Where("is_active = ?", true).
+		Preload("Category", func(db *gorm.DB) *gorm.DB {
+			return db.Unscoped()
+		}).
+		Find(&packages).Error
 	return packages, err
 }
 
 func (r *PackageRepository) GetByCategoryAndName(ctx context.Context, categoryID uint, name string) (*model.Package, error) {
 	var pkg model.Package
-	err := r.db.WithContext(ctx).Where("category_id = ? AND name = ?", categoryID, name).First(&pkg).Error
+	// Use Unscoped() to include soft-deleted categories
+	err := r.db.WithContext(ctx).
+		Where("category_id = ? AND name = ?", categoryID, name).
+		Preload("Category", func(db *gorm.DB) *gorm.DB {
+			return db.Unscoped()
+		}).
+		First(&pkg).Error
 	if err != nil {
 		return nil, err
 	}
