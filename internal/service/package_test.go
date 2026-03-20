@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -874,5 +875,77 @@ func TestPackageService_GenerateDownloadURL_ExternalPrefixWithTrailingSlash(t *t
 	}
 	if !strings.Contains(url, "expires=") {
 		t.Error("external URL should contain expires parameter")
+	}
+}
+
+func TestPackageService_GetVersionsByCategoryCode(t *testing.T) {
+	db := setupServiceTestDB(t)
+	user := createTestUser(t, db)
+	category := createTestCategory(t, db)
+	pkg := createTestPackage(t, db, category, "TestApp", user.ID)
+	ls, tmpDir := createTestStorage(t)
+	defer os.RemoveAll(tmpDir)
+
+	packageRepo := repository.NewPackageRepository(db)
+	versionRepo := repository.NewVersionRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
+	ctx := context.Background()
+
+	// Upload multiple versions
+	for i := 1; i <= 3; i++ {
+		fileHeader := createMultipartFileHeader(t, fmt.Sprintf("TestApp_v1.0.%d.apk", i), "test content")
+		req := &CreateVersionRequest{Version: fmt.Sprintf("1.0.%d", i), IsStable: true}
+		_, err := svc.UploadVersion(ctx, pkg.ID, user.ID, fileHeader, req)
+		if err != nil {
+			t.Fatalf("failed to upload version: %v", err)
+		}
+	}
+
+	// Get versions by category code with download URLs
+	versions, err := svc.GetVersionsByCategoryCode(ctx, category.Code, "test-secret")
+	if err != nil {
+		t.Fatalf("failed to get versions by category code: %v", err)
+	}
+
+	if len(versions) != 3 {
+		t.Errorf("expected 3 versions, got %d", len(versions))
+	}
+
+	// Verify versions are ordered by version_code DESC
+	if versions[0]["version"] != "1.0.3" {
+		t.Errorf("expected first version to be 1.0.3, got %v", versions[0]["version"])
+	}
+
+	// Verify each version has download_url
+	for _, v := range versions {
+		if _, ok := v["download_url"]; !ok {
+			t.Error("version should have download_url")
+		}
+		if _, ok := v["package"]; !ok {
+			t.Error("version should have package info")
+		}
+	}
+}
+
+func TestPackageService_GetVersionsByCategoryCode_EmptyCategory(t *testing.T) {
+	db := setupServiceTestDB(t)
+	ls, tmpDir := createTestStorage(t)
+	defer os.RemoveAll(tmpDir)
+
+	packageRepo := repository.NewPackageRepository(db)
+	versionRepo := repository.NewVersionRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
+	ctx := context.Background()
+
+	versions, err := svc.GetVersionsByCategoryCode(ctx, "NONEXISTENT_CODE", "test-secret")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(versions) != 0 {
+		t.Errorf("expected 0 versions, got %d", len(versions))
 	}
 }

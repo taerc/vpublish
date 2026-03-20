@@ -413,6 +413,45 @@ func (h *PackageHandler) GetLatestByCategory(c *gin.Context) {
 	response.Success(c, resp)
 }
 
+// GetVersionsByCategory APP端：根据类别代码获取版本列表
+// @Summary 获取类别版本列表
+// @Description APP端根据类别代码获取该类别下软件包的最新5个版本信息列表，包含带签名的下载链接
+// @Tags APP端
+// @Accept json
+// @Produce json
+// @Param code path string true "类别代码" example("TYPE_WU_REN_JI")
+// @Success 200 {object} response.Response{data=[]map[string]interface{}} "版本列表信息"
+// @Failure 400 {object} response.Response "类别代码不能为空"
+// @Failure 401 {object} response.Response "认证失败"
+// @Failure 404 {object} response.Response "该类别下没有找到版本"
+// @Security SignatureAuth []
+// @Security TimestampAuth []
+// @Security SignatureValueAuth []
+// @Router /app/categories/{code}/versions [get]
+func (h *PackageHandler) GetVersionsByCategory(c *gin.Context) {
+	code := c.Param("code")
+	if code == "" {
+		response.BadRequest(c, "category code is required")
+		return
+	}
+
+	// 获取 AppKey 信息用于生成签名链接
+	appKey := middleware.GetAppKey(c)
+
+	versions, err := h.packageService.GetVersionsByCategoryCode(c.Request.Context(), code, appKey.AppSecret)
+	if err != nil {
+		response.NotFound(c, "no versions found for this category")
+		return
+	}
+
+	if len(versions) == 0 {
+		response.NotFound(c, "no versions found for this category")
+		return
+	}
+
+	response.Success(c, versions)
+}
+
 // Download 下载软件包
 // @Summary 下载软件包
 // @Description APP端下载软件包版本文件，需要提供有效的下载令牌

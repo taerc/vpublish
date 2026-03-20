@@ -284,7 +284,138 @@ function shouldForceUpgrade(currentVersionCode, minVersion) {
 
 ---
 
-### 3. 下载软件包
+### 3. 获取某类别版本列表
+
+根据类别代码获取该类别下软件包的最新 5 个稳定版本信息列表，包含下载链接。APP 可根据需求选择对应版本下载。
+
+**请求**
+
+```
+GET /api/v1/app/categories/:code/versions
+```
+
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `code` | string | 是 | 类别代码（如 `TYPE_WU_REN_JI`） |
+
+**请求头**
+
+```
+X-App-Key: <your_app_key>
+X-Timestamp: 2024-01-15T10:30:00Z
+X-Signature: <calculated_signature>
+```
+
+**请求示例**
+
+```
+GET /api/v1/app/categories/TYPE_WU_REN_JI/versions
+```
+
+**响应示例**
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "id": 125,
+      "version": "2.2.0",
+      "version_code": 20200,
+      "file_name": "drone_control_v2.2.0.apk",
+      "file_size": 55000000,
+      "file_hash": "a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890",
+      "changelog": "1. 新增云同步功能\n2. 优化飞行稳定性",
+      "release_notes": "本次更新新增云同步功能...",
+      "min_version": "1.5.0",
+      "force_upgrade": false,
+      "is_stable": true,
+      "download_url": "http://your-domain/api/v1/app/download/125?token=xxx&expires=1705311600",
+      "published_at": "2024-01-15T08:00:00Z",
+      "package": {
+        "id": 45,
+        "name": "无人机控制软件",
+        "category": {
+          "id": 1,
+          "name": "无人机",
+          "code": "TYPE_WU_REN_JI"
+        }
+      }
+    },
+    {
+      "id": 124,
+      "version": "2.1.0",
+      "version_code": 20100,
+      "file_name": "drone_control_v2.1.0.apk",
+      "file_size": 52428800,
+      "file_hash": "b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890ab",
+      "changelog": "1. 新增飞行轨迹记录\n2. 优化电池续航显示",
+      "release_notes": "本次更新主要优化飞行稳定性...",
+      "min_version": "1.5.0",
+      "force_upgrade": false,
+      "is_stable": true,
+      "download_url": "http://your-domain/api/v1/app/download/124?token=xxx&expires=1705311600",
+      "published_at": "2024-01-10T08:00:00Z",
+      "package": {
+        "id": 45,
+        "name": "无人机控制软件",
+        "category": {
+          "id": 1,
+          "name": "无人机",
+          "code": "TYPE_WU_REN_JI"
+        }
+      }
+    }
+  ]
+}
+```
+
+**响应字段说明**
+
+返回一个版本数组，最多 5 个版本，按版本号降序排列（最新版本在前）。每个版本字段与「获取某类别最新版本」接口相同。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | int | 版本 ID |
+| `version` | string | 版本号（语义化版本，如 `2.1.0`） |
+| `version_code` | int | 版本数值（用于版本比较，如 `20100`） |
+| `file_name` | string | 文件名 |
+| `file_size` | int | 文件大小（字节） |
+| `file_hash` | string | 文件 SHA256 哈希值 |
+| `changelog` | string | 更新日志 |
+| `release_notes` | string | 发布说明 |
+| `min_version` | string | 最低兼容版本 |
+| `force_upgrade` | bool | 是否强制升级 |
+| `is_stable` | bool | 是否为稳定版 |
+| `download_url` | string | 带签名的下载链接（有效期 1 小时） |
+| `published_at` | string | 发布时间（RFC3339 格式） |
+| `package` | object | 所属软件包信息 |
+| `package.category` | object | 所属类别信息 |
+
+**使用场景**
+
+1. **版本选择**：APP 可展示版本列表让用户选择下载特定版本
+2. **增量更新**：通过比较版本号判断用户是否需要更新
+3. **历史版本**：支持用户下载旧版本
+
+**错误响应**
+
+类别不存在时返回：
+
+```json
+{
+  "code": 404,
+  "message": "no versions found for this category",
+  "data": null
+}
+```
+
+---
+
+### 4. 下载软件包
 
 通过带签名的下载链接下载软件包文件。
 
@@ -448,6 +579,14 @@ class VPublishClient:
         response = requests.get(url, headers=headers)
         return response.json()
     
+    def get_versions(self, category_code: str) -> dict:
+        """获取某类别版本列表（最新5个版本）"""
+        url = f'{self.base_url}/api/v1/app/categories/{category_code}/versions'
+        headers = self._get_headers()
+        
+        response = requests.get(url, headers=headers)
+        return response.json()
+    
     def download_file(self, download_url: str, save_path: str) -> bool:
         """下载文件"""
         headers = {'X-App-Key': self.app_key}
@@ -477,11 +616,17 @@ if __name__ == '__main__':
     latest = client.get_latest_version('TYPE_WU_REN_JI')
     print('Latest version:', latest)
     
-    # 下载文件
-    if latest['code'] == 0:
-        download_url = latest['data']['download_url']
-        file_hash = latest['data']['file_hash']
-        file_name = latest['data']['file_name']
+    # 获取版本列表（最新5个）
+    versions = client.get_versions('TYPE_WU_REN_JI')
+    print('Versions list:', versions)
+    
+    # 下载文件（使用版本列表中的某个版本）
+    if versions['code'] == 0 and len(versions['data']) > 0:
+        # 选择用户想要的版本（这里选择第一个，即最新版本）
+        selected_version = versions['data'][0]
+        download_url = selected_version['download_url']
+        file_hash = selected_version['file_hash']
+        file_name = selected_version['file_name']
         
         if client.download_file(download_url, f'./{file_name}'):
             print('Download completed')
@@ -593,6 +738,14 @@ class VPublishClient {
     const response = await fetch(url, { headers });
     return response.json();
   }
+
+  async getVersions(categoryCode: string): Promise<ApiResponse<Version[]>> {
+    const url = `${this.baseUrl}/api/v1/app/categories/${categoryCode}/versions`;
+    const headers = this.getHeaders();
+    
+    const response = await fetch(url, { headers });
+    return response.json();
+  }
 }
 
 // 使用示例
@@ -610,6 +763,10 @@ async function main() {
   // 获取最新版本
   const latest = await client.getLatestVersion('TYPE_WU_REN_JI');
   console.log('Latest version:', latest);
+  
+  // 获取版本列表（最新5个）
+  const versions = await client.getVersions('TYPE_WU_REN_JI');
+  console.log('Versions list:', versions);
 }
 
 main();
@@ -727,6 +884,21 @@ public class VPublishClient {
         return response.body();
     }
 
+    public String getVersions(String categoryCode) throws Exception {
+        String url = baseUrl + "/api/v1/app/categories/" + categoryCode + "/versions";
+        Map<String, String> headers = getHeaders(Map.of());
+        
+        HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+        headers.forEach(builder::header);
+        
+        HttpResponse<String> response = httpClient.send(
+            builder.build(), 
+            HttpResponse.BodyHandlers.ofString()
+        );
+        
+        return response.body();
+    }
+
     public static void main(String[] args) throws Exception {
         VPublishClient client = new VPublishClient(
             "http://localhost:8080",
@@ -736,6 +908,7 @@ public class VPublishClient {
         
         System.out.println("Categories: " + client.getCategories());
         System.out.println("Latest: " + client.getLatestVersion("TYPE_WU_REN_JI"));
+        System.out.println("Versions: " + client.getVersions("TYPE_WU_REN_JI"));
     }
 }
 ```

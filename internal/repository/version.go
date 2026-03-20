@@ -93,6 +93,32 @@ func (r *VersionRepository) GetLatestByCategoryCode(ctx context.Context, categor
 	return &version, nil
 }
 
+func (r *VersionRepository) GetLatestVersionsByCategoryCode(ctx context.Context, categoryCode string, limit int) ([]model.Version, error) {
+	var versions []model.Version
+	err := r.db.WithContext(ctx).
+		Joins("JOIN packages ON packages.id = versions.package_id").
+		Joins("JOIN categories ON categories.id = packages.category_id").
+		Where("categories.code = ? AND packages.is_active = ? AND versions.is_stable = ?", categoryCode, 1, 1).
+		Order("versions.version_code DESC").
+		Limit(limit).
+		Find(&versions).Error
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range versions {
+		var pkg model.Package
+		if err := r.db.WithContext(ctx).First(&pkg, versions[i].PackageID).Error; err == nil {
+			versions[i].Package = &pkg
+			var category model.Category
+			if err := r.db.WithContext(ctx).First(&category, pkg.CategoryID).Error; err == nil {
+				pkg.Category = &category
+			}
+		}
+	}
+
+	return versions, nil
+}
 
 func (r *VersionRepository) ClearLatestFlag(ctx context.Context, packageID uint) error {
 	return r.db.WithContext(ctx).
@@ -131,4 +157,38 @@ func (r *VersionRepository) GetMaxVersionCode(ctx context.Context, packageID uin
 		Select("COALESCE(MAX(version_code), 0)").
 		Scan(&maxCode).Error
 	return maxCode, err
+}
+
+// GetVersionsByCategoryCode 根据类别代码获取所有版本列表
+func (r *VersionRepository) GetVersionsByCategoryCode(ctx context.Context, categoryCode string, page, pageSize int) ([]model.Version, int64, error) {
+	var versions []model.Version
+	var total int64
+
+	db := r.db.WithContext(ctx).
+		Joins("JOIN packages ON packages.id = versions.package_id").
+		Joins("JOIN categories ON categories.id = packages.category_id").
+		Where("categories.code = ? AND packages.is_active = ?", categoryCode, true).
+		Model(&model.Version{})
+
+	db.Count(&total)
+
+	offset := (page - 1) * pageSize
+	err := db.Offset(offset).Limit(pageSize).Order("versions.version_code DESC").Find(&versions).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 加载关联数据
+	for i := range versions {
+		var pkg model.Package
+		if err := r.db.WithContext(ctx).First(&pkg, versions[i].PackageID).Error; err == nil {
+			versions[i].Package = &pkg
+			var category model.Category
+			if err := r.db.WithContext(ctx).First(&category, pkg.CategoryID).Error; err == nil {
+				pkg.Category = &category
+			}
+		}
+	}
+
+	return versions, total, nil
 }

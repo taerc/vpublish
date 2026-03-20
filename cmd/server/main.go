@@ -282,6 +282,9 @@ func setupRoutes(
 			// 获取某类别的最新版本
 			app.GET("/categories/:code/latest", packageHandler.GetLatestByCategory)
 
+			// 获取某类别的版本列表（最多5个）
+			app.GET("/categories/:code/versions", packageHandler.GetVersionsByCategory)
+
 			// 下载
 			app.GET("/download/:id", packageHandler.Download)
 		}

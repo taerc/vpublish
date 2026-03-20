@@ -106,9 +106,10 @@ npm run build
 - `X-Signature`: 签名
 
 ```
-GET  /api/v1/app/categories              # 获取软件类别列表
-GET  /api/v1/app/categories/:code/latest # 获取某类别最新版本
-GET  /api/v1/app/download/:id            # 下载软件包
+GET  /api/v1/app/categories               # 获取软件类别列表
+GET  /api/v1/app/categories/:code/latest  # 获取某类别最新版本
+GET  /api/v1/app/categories/:code/versions # 获取某类别版本列表（最新5个）
+GET  /api/v1/app/download/:id             # 下载软件包
 ```
 
 ### 管理端 API

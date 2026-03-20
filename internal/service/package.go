@@ -337,6 +337,58 @@ func (s *PackageService) GetLatestByCategoryCode(ctx context.Context, categoryCo
 	return s.versionRepo.GetLatestByCategoryCode(ctx, categoryCode)
 }
 
+// GetVersionsByCategoryCode 根据类别代码获取最新5个版本列表（含下载链接）
+func (s *PackageService) GetVersionsByCategoryCode(ctx context.Context, categoryCode string, appSecret string) ([]map[string]interface{}, error) {
+	versions, err := s.versionRepo.GetLatestVersionsByCategoryCode(ctx, categoryCode, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]map[string]interface{}, 0, len(versions))
+	for _, version := range versions {
+		downloadURL, err := s.GenerateDownloadURL(ctx, version.ID, appSecret)
+		if err != nil {
+			return nil, err
+		}
+
+		// Build package info (handle nil safely)
+		packageInfo := map[string]interface{}{
+			"id":       version.PackageID,
+			"name":     "",
+			"category": nil,
+		}
+		if version.Package != nil {
+			packageInfo["name"] = version.Package.Name
+			if version.Package.Category != nil {
+				packageInfo["category"] = map[string]interface{}{
+					"id":   version.Package.Category.ID,
+					"name": version.Package.Category.Name,
+					"code": version.Package.Category.Code,
+				}
+			}
+		}
+
+		result = append(result, map[string]interface{}{
+			"id":            version.ID,
+			"version":       version.Version,
+			"version_code":  version.VersionCode,
+			"file_name":     version.FileName,
+			"file_size":     version.FileSize,
+			"file_hash":     version.FileHash,
+			"changelog":     version.Changelog,
+			"release_notes": version.ReleaseNotes,
+			"min_version":   version.MinVersion,
+			"force_upgrade": version.ForceUpgrade,
+			"is_stable":     version.IsStable,
+			"download_url":  downloadURL,
+			"published_at":  version.PublishedAt,
+			"package":       packageInfo,
+		})
+	}
+
+	return result, nil
+}
+
 // GetVersionByID 获取版本详情
 func (s *PackageService) GetVersionByID(ctx context.Context, id uint) (*model.Version, error) {
 	return s.versionRepo.GetByID(ctx, id)

@@ -3447,6 +3447,90 @@
                 }
             }
         },
+        "/app/categories/{code}/versions": {
+            "get": {
+                "security": [
+                    {
+                        "SignatureAuth ": [
+                            ""
+                        ]
+                    },
+                    {
+                        "TimestampAuth ": [
+                            ""
+                        ]
+                    },
+                    {
+                        "SignatureValueAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "APP端根据类别代码获取该类别下软件包的最新5个版本信息列表，包含带签名的下载链接",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "APP端"
+                ],
+                "summary": "获取类别版本列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"TYPE_WU_REN_JI\"",
+                        "description": "类别代码",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "版本列表信息",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "additionalProperties": true
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "类别代码不能为空",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "认证失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "该类别下没有找到版本",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/app/download/{id}": {
             "get": {
                 "security": [

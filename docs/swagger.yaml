@@ -2780,6 +2780,55 @@ paths:
       summary: 获取类别最新版本
       tags:
       - APP端
+  /app/categories/{code}/versions:
+    get:
+      consumes:
+      - application/json
+      description: APP端根据类别代码获取该类别下软件包的最新5个版本信息列表，包含带签名的下载链接
+      parameters:
+      - description: 类别代码
+        example: '"TYPE_WU_REN_JI"'
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 版本列表信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    additionalProperties: true
+                    type: object
+                  type: array
+              type: object
+        "400":
+          description: 类别代码不能为空
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 该类别下没有找到版本
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'SignatureAuth ':
+        - ""
+      - 'TimestampAuth ':
+        - ""
+      - 'SignatureValueAuth ':
+        - ""
+      summary: 获取类别版本列表
+      tags:
+      - APP端
   /app/download/{id}:
     get:
       consumes:
