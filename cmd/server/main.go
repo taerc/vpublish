@@ -104,6 +104,7 @@ func main() {
 	packageRepo := repository.NewPackageRepository(db)
 	versionRepo := repository.NewVersionRepository(db)
 	statsRepo := repository.NewStatsRepository(db)
+	errorRecordRepo := repository.NewErrorRecordRepository(db)
 
 	// 初始化 Service
 	userService := service.NewUserService(userRepo)
@@ -112,6 +113,7 @@ func main() {
 	statsService := service.NewStatsService(statsRepo)
 	appKeyService := service.NewAppKeyService(appKeyRepo)
 	mcpCredService := service.NewMCPCredentialService(mcpCredRepo)
+	errorReportService := service.NewErrorReportService(errorRecordRepo)
 
 	// 初始化 Handler
 	authHandler := handler.NewAuthHandler(userService, jwtService)
@@ -121,6 +123,7 @@ func main() {
 	statsHandler := handler.NewStatsHandler(statsService)
 	appKeyHandler := handler.NewAppKeyHandler(appKeyService)
 	mcpCredHandler := handler.NewMCPCredentialHandler(mcpCredService)
+	errorReportHandler := handler.NewErrorReportHandler(errorReportService)
 
 	// 创建路由
 	gin.SetMode(cfg.Server.Mode)
@@ -130,7 +133,7 @@ func main() {
 	r.Use(middleware.CORS(&cfg.CORS))
 
 	setupRoutes(r, authHandler, userHandler, categoryHandler, packageHandler, statsHandler,
-		appKeyHandler, mcpCredHandler, jwtService, appKeyRepo, cfg.Server.Mode)
+		appKeyHandler, mcpCredHandler, errorReportHandler, jwtService, appKeyRepo, cfg.Server.Mode)
 
 	// 启动服务器
 	srv := &http.Server{
@@ -175,6 +178,7 @@ func setupRoutes(
 	statsHandler *handler.StatsHandler,
 	appKeyHandler *handler.AppKeyHandler,
 	mcpCredHandler *handler.MCPCredentialHandler,
+	errorReportHandler *handler.ErrorReportHandler,
 	jwtService *jwt.JWT,
 	appKeyRepo *repository.AppKeyRepository,
 	serverMode string,
@@ -269,7 +273,24 @@ func setupRoutes(
 				auth.PUT("/mcp-credentials/:id", mcpCredHandler.Update)
 				auth.DELETE("/mcp-credentials/:id", mcpCredHandler.Delete)
 				auth.POST("/mcp-credentials/:id/regenerate", mcpCredHandler.RegenerateSecret)
+
+				// 报错记录管理（需要JWT认证）
+				auth.GET("/error/records", errorReportHandler.List)
+				auth.GET("/error/records/:id", errorReportHandler.Get)
+				auth.PUT("/error/records/:id/remark", errorReportHandler.UpdateRemark)
+				auth.GET("/error/modules", errorReportHandler.GetModules)
+				auth.GET("/error/export", errorReportHandler.ExportExcel)
+
+				// 报错统计（需要JWT认证）
+				auth.GET("/error/statistics/trend", errorReportHandler.GetTrend)
+				auth.GET("/error/statistics/module", errorReportHandler.GetModuleStats)
 			}
+
+			// 报错上报（不需要JWT认证，支持直接上报）
+			// APP端建议使用 /api/v1/app/error/report（签名认证）
+			// 管理端可以使用 /api/v1/admin/error/report（无需认证）
+			admin.POST("/error/report", errorReportHandler.Report)
+			admin.POST("/error/report/batch", errorReportHandler.BatchReport)
 		}
 
 		// ============ APP端 API ============
@@ -287,6 +308,10 @@ func setupRoutes(
 
 			// 下载
 			app.GET("/download/:id", packageHandler.Download)
+
+			// 报错上报
+			app.POST("/error/report", errorReportHandler.Report)
+			app.POST("/error/report/batch", errorReportHandler.BatchReport)
 		}
 	}
 }

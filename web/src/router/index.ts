@@ -59,6 +59,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/AppKeyManagement.vue'),
         meta: { title: 'AppKey管理', icon: 'Key', adminOnly: true },
       },
+      {
+        path: 'error-reports',
+        name: 'ErrorReports',
+        component: () => import('@/views/ErrorReports.vue'),
+        meta: { title: '报错记录', icon: 'Warning', adminOnly: true },
+      },
     ],
   },
 ]
