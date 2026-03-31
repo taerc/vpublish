@@ -57,14 +57,15 @@ func (r *ErrorRecordRepository) GetByRequestID(ctx context.Context, requestID st
 
 // ListQuery 查询参数
 type ErrorRecordListQuery struct {
-	Page      int
-	PageSize  int
-	StartTime int64
-	EndTime   int64
-	AppType   string
-	Module    string
-	ErrorType string
-	Keyword   string
+	Page        int
+	PageSize    int
+	StartTime   int64
+	EndTime     int64
+	AppType     string
+	Module      string
+	ErrorType   string
+	Keyword     string
+	IsSemantic  *bool // 是否为语义化报错：true=是, false=否, nil=不限
 }
 
 // List 分页查询报错记录
@@ -101,6 +102,17 @@ func (r *ErrorRecordRepository) List(ctx context.Context, query *ErrorRecordList
 	if query.Keyword != "" {
 		keyword := "%" + query.Keyword + "%"
 		db = db.Where("error_message LIKE ? OR request_id LIKE ?", keyword, keyword)
+	}
+
+	// 语义化报错筛选
+	if query.IsSemantic != nil {
+		if *query.IsSemantic {
+			// 是语义化报错：包含中文字符
+			db = db.Where("error_message REGEXP ?", "[\\u4e00-\\u9fa5]")
+		} else {
+			// 不是语义化报错：不包含中文字符
+			db = db.Where("error_message NOT REGEXP ?", "[\\u4e00-\\u9fa5]")
+		}
 	}
 
 	// 统计总数

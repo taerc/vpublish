@@ -279,6 +279,7 @@ func setupRoutes(
 				auth.GET("/error/records/:id", errorReportHandler.Get)
 				auth.PUT("/error/records/:id/remark", errorReportHandler.UpdateRemark)
 				auth.GET("/error/modules", errorReportHandler.GetModules)
+				auth.GET("/error/export", errorReportHandler.ExportExcel)
 
 				// 报错统计（需要JWT认证）
 				auth.GET("/error/statistics/trend", errorReportHandler.GetTrend)

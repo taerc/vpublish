@@ -39,6 +39,15 @@
         <el-option label="系统错误" value="system_error" />
         <el-option label="业务错误" value="business_error" />
       </el-select>
+      <el-select
+        v-model="filter.is_semantic"
+        placeholder="是否语义化"
+        clearable
+        style="width: 130px; margin-right: 10px;"
+      >
+        <el-option label="是" :value="true" />
+        <el-option label="否" :value="false" />
+      </el-select>
       <el-input
         v-model="filter.keyword"
         placeholder="搜索报错信息、request-id"
@@ -53,6 +62,10 @@
       <el-button @click="resetFilter">
         <el-icon><RefreshLeft /></el-icon>
         重置
+      </el-button>
+      <el-button type="success" @click="exportExcel" :loading="exporting">
+        <el-icon><Download /></el-icon>
+        导出
       </el-button>
     </div>
 
@@ -222,6 +235,7 @@ import { errorApi, type ErrorRecord, type ErrorRecordDetail, type ErrorQueryPara
 import { formatNumber } from '@/utils'
 
 const loading = ref(false)
+const exporting = ref(false)
 const recordList = ref<ErrorRecord[]>([])
 const moduleList = ref<string[]>([])
 const detailVisible = ref(false)
@@ -232,6 +246,7 @@ const filter = reactive({
   app_type: undefined as string | undefined,
   module: undefined as string | undefined,
   error_type: undefined as string | undefined,
+  is_semantic: undefined as boolean | undefined,
   keyword: '',
 })
 
@@ -279,6 +294,7 @@ async function loadData() {
     if (filter.app_type) params.app_type = filter.app_type
     if (filter.module) params.module = filter.module
     if (filter.error_type) params.error_type = filter.error_type
+    if (filter.is_semantic !== undefined) params.is_semantic = filter.is_semantic
     if (filter.keyword) params.keyword = filter.keyword
 
     const res = await errorApi.list(params)
@@ -328,9 +344,47 @@ function resetFilter() {
   filter.app_type = undefined
   filter.module = undefined
   filter.error_type = undefined
+  filter.is_semantic = undefined
   filter.keyword = ''
   pagination.page = 1
   loadData()
+}
+
+async function exportExcel() {
+  exporting.value = true
+  try {
+    const params: ErrorQueryParams = {}
+
+    if (dateRange.value) {
+      params.start_time = dateRange.value[0]
+      params.end_time = dateRange.value[1]
+    }
+
+    if (filter.app_type) params.app_type = filter.app_type
+    if (filter.module) params.module = filter.module
+    if (filter.error_type) params.error_type = filter.error_type
+    if (filter.is_semantic !== undefined) params.is_semantic = filter.is_semantic
+    if (filter.keyword) params.keyword = filter.keyword
+
+    const blob = await errorApi.exportExcel(params)
+    
+    // 创建下载链接
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `报错记录_${new Date().getTime()}.xlsx`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+    
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('export error:', error)
+    ElMessage.error('导出失败')
+  } finally {
+    exporting.value = false
+  }
 }
 
 function formatTimestamp(timestamp: number): string {

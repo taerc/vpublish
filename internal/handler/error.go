@@ -153,12 +153,14 @@ type ErrorRecordQuery struct {
 	ErrorType string `form:"error_type" example:"system_error"`
 	// 关键词搜索
 	Keyword string `form:"keyword" example:"Internal"`
+	// 是否为语义化报错：true=是, false=否
+	IsSemantic *bool `form:"is_semantic" example:"true"`
 }
 
 // List 报错记录列表
 //
 // @Summary 获取报错记录分页列表
-// @Description 分页查询报错记录列表，支持按时间、应用类型、模块、报错类型等条件筛选
+// @Description 分页查询报错记录列表，支持按时间、应用类型、模块、报错类型、是否语义化等条件筛选
 // @Tags 管理员/报错管理
 // @Accept json
 // @Produce json
@@ -170,6 +172,7 @@ type ErrorRecordQuery struct {
 // @Param module query string false "报错模块"
 // @Param error_type query string false "报错类型：system_error/business_error"
 // @Param keyword query string false "关键词搜索"
+// @Param is_semantic query bool false "是否为语义化报错：true=是, false=否"
 // @Success 200 {object} response.Response{data=response.PageData{list=[]model.ErrorRecord}} "获取成功，返回报错记录分页列表"
 // @Failure 401 {object} response.Response "未认证访问"
 // @Failure 500 {object} response.Response "服务器内部错误"
@@ -195,14 +198,15 @@ func (h *ErrorReportHandler) List(c *gin.Context) {
 
 	// 转换为service层查询参数
 	svcQuery := &service.ErrorRecordQuery{
-		Page:      query.Page,
-		PageSize:  query.PageSize,
-		StartTime: query.StartTime,
-		EndTime:   query.EndTime,
-		AppType:   query.AppType,
-		Module:    query.Module,
-		ErrorType: query.ErrorType,
-		Keyword:   query.Keyword,
+		Page:       query.Page,
+		PageSize:   query.PageSize,
+		StartTime:  query.StartTime,
+		EndTime:    query.EndTime,
+		AppType:    query.AppType,
+		Module:     query.Module,
+		ErrorType:  query.ErrorType,
+		Keyword:    query.Keyword,
+		IsSemantic: query.IsSemantic,
 	}
 
 	records, total, err := h.reportService.List(c.Request.Context(), svcQuery)
@@ -382,4 +386,59 @@ func (h *ErrorReportHandler) GetModuleStats(c *gin.Context) {
 	}
 
 	response.Success(c, stats)
+}
+
+// ExportExcel 导出报错记录到 Excel
+//
+// @Summary 导出报错记录到 Excel
+// @Description 根据筛选条件将报错记录导出为 Excel 文件
+// @Tags 管理员/报错管理
+// @Accept json
+// @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+// @Param start_time query int false "开始时间戳（毫秒）"
+// @Param end_time query int false "结束时间戳（毫秒）"
+// @Param app_type query string false "应用类型：app/platform"
+// @Param module query string false "报错模块"
+// @Param error_type query string false "报错类型：system_error/business_error"
+// @Param keyword query string false "关键词搜索"
+// @Param is_semantic query bool false "是否为语义化报错：true=是, false=否"
+// @Success 200 {file} file "Excel 文件"
+// @Failure 401 {object} response.Response "未认证访问"
+// @Failure 500 {object} response.Response "服务器内部错误"
+// @Security BearerAuth []
+// @Router /admin/error/export [get]
+func (h *ErrorReportHandler) ExportExcel(c *gin.Context) {
+	var query ErrorRecordQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		response.BadRequest(c, "invalid query: "+err.Error())
+		return
+	}
+
+	// 转换为service层查询参数
+	svcQuery := &service.ErrorRecordQuery{
+		StartTime:  query.StartTime,
+		EndTime:    query.EndTime,
+		AppType:    query.AppType,
+		Module:     query.Module,
+		ErrorType:  query.ErrorType,
+		Keyword:    query.Keyword,
+		IsSemantic: query.IsSemantic,
+	}
+
+	// 生成 Excel 文件
+	file, err := h.reportService.ExportToExcel(c.Request.Context(), svcQuery)
+	if err != nil {
+		response.InternalError(c, "failed to export excel: "+err.Error())
+		return
+	}
+
+	// 设置响应头
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", "attachment; filename=error_records.xlsx")
+
+	// 写入文件
+	if _, err := file.WriteTo(c.Writer); err != nil {
+		response.InternalError(c, "failed to write excel: "+err.Error())
+		return
+	}
 }

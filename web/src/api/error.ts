@@ -1,4 +1,5 @@
 import { get, post, put, type ApiResponse, type PageResponse } from './request'
+import service from './request'
 
 // ==================== 类型定义 ====================
 
@@ -60,6 +61,7 @@ export interface ErrorQueryParams {
   module?: string
   error_type?: string
   keyword?: string
+  is_semantic?: boolean  // 是否为语义化报错
 }
 
 // 统计趋势项
@@ -114,6 +116,14 @@ export const errorApi = {
   // 获取模块列表
   getModules(): Promise<ApiResponse<string[]>> {
     return get('/admin/error/modules')
+  },
+
+  // 导出报错记录到 Excel
+  exportExcel(params?: ErrorQueryParams): Promise<Blob> {
+    return service.get('/admin/error/export', {
+      params,
+      responseType: 'blob',
+    }).then((response) => response.data)
   },
 
   // ========== 统计 ==========
