@@ -1,4 +1,15 @@
 definitions:
+  handler.BatchErrorReportRequest:
+    properties:
+      records:
+        description: 报错记录列表（最多100条）
+        items:
+          $ref: '#/definitions/handler.ErrorReportRequest'
+        maxItems: 100
+        type: array
+    required:
+    - records
+    type: object
   handler.CreateCategoryRequest:
     properties:
       description:
@@ -46,6 +57,52 @@ definitions:
     required:
     - name
     - permission_level
+    type: object
+  handler.ErrorReportRequest:
+    properties:
+      app_type:
+        description: 应用类型：app/platform（必填）
+        example: app
+        type: string
+      code:
+        description: 接口返回的错误码（必填）
+        example: "500"
+        type: string
+      device_info:
+        additionalProperties: true
+        description: 设备信息（必填）
+        type: object
+      error_message:
+        description: 接口返回的消息信息（必填）
+        example: Internal Server Error
+        type: string
+      error_type:
+        description: 报错类型：system_error/business_error（非必填，系统自动识别）
+        example: system_error
+        type: string
+      module:
+        description: 报错模块（自动识别，非必填）
+        example: user
+        type: string
+      request_id:
+        description: 接口请求唯一标识（必填）
+        example: req-20260330-001
+        type: string
+      request_params:
+        additionalProperties: true
+        description: 接口入参（非必填）
+        type: object
+      timestamp:
+        description: 报错发生时间戳（毫秒，必填）
+        example: 1711737600000
+        type: integer
+    required:
+    - app_type
+    - code
+    - device_info
+    - error_message
+    - request_id
+    - timestamp
     type: object
   handler.LoginRequest:
     properties:
@@ -226,6 +283,15 @@ definitions:
         example: read_write
         type: string
     type: object
+  handler.UpdateRemarkRequest:
+    properties:
+      remark:
+        description: 备注信息
+        example: 已处理，问题已解决
+        type: string
+    required:
+    - remark
+    type: object
   handler.UserCreateRequest:
     properties:
       email:
@@ -358,6 +424,64 @@ definitions:
         description: 更新时间
         example: "2024-03-12T15:30:00Z"
         type: string
+    type: object
+  model.ErrorRecord:
+    properties:
+      app_type:
+        description: 应用类型：app/platform
+        example: app
+        type: string
+      code:
+        description: 接口返回的错误码
+        example: "500"
+        type: string
+      created_at:
+        description: 创建时间
+        example: "2026-03-30T10:00:00Z"
+        type: string
+      device_info:
+        allOf:
+        - $ref: '#/definitions/model.JSONMap'
+        description: 设备信息
+      error_message:
+        description: 接口返回的消息信息
+        example: Internal Server Error
+        type: string
+      error_type:
+        description: 报错类型：system_error/business_error
+        example: system_error
+        type: string
+      id:
+        description: 主键ID
+        example: 1
+        type: integer
+      module:
+        description: 报错模块（自动识别）
+        example: user
+        type: string
+      remark:
+        description: 备注
+        example: 已处理
+        type: string
+      request_id:
+        description: 接口请求唯一标识
+        example: req-20260330-001
+        type: string
+      request_params:
+        allOf:
+        - $ref: '#/definitions/model.JSONMap'
+        description: 接口入参
+      timestamp:
+        description: 报错发生时间戳（毫秒）
+        example: 1711737600000
+        type: integer
+      updated_at:
+        description: 更新时间
+        example: "2026-03-30T15:30:00Z"
+        type: string
+    type: object
+  model.JSONMap:
+    additionalProperties: true
     type: object
   model.MCPCredential:
     properties:
@@ -647,6 +771,31 @@ definitions:
         type: string
     required:
     - app_name
+    type: object
+  service.ModuleStat:
+    properties:
+      count:
+        type: integer
+      error_type:
+        type: string
+      module:
+        type: string
+    type: object
+  service.TrendData:
+    properties:
+      count:
+        type: integer
+      date:
+        type: string
+    type: object
+  service.TrendStatistics:
+    properties:
+      total_count:
+        type: integer
+      trend:
+        items:
+          $ref: '#/definitions/service.TrendData'
+        type: array
     type: object
   service.UpdateAppKeyRequest:
     properties:
@@ -1400,6 +1549,383 @@ paths:
       summary: 根据代码获取类别详情
       tags:
       - 管理员/类别管理
+  /admin/error/modules:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有的报错模块列表，用于筛选条件
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回模块列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取所有报错模块列表
+      tags:
+      - 管理员/报错管理
+  /admin/error/records:
+    get:
+      consumes:
+      - application/json
+      description: 分页查询报错记录列表，支持按时间、应用类型、模块、报错类型等条件筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      - description: 开始时间戳（毫秒）
+        in: query
+        name: start_time
+        type: integer
+      - description: 结束时间戳（毫秒）
+        in: query
+        name: end_time
+        type: integer
+      - description: 应用类型：app/platform
+        in: query
+        name: app_type
+        type: string
+      - description: 报错模块
+        in: query
+        name: module
+        type: string
+      - description: 报错类型：system_error/business_error
+        in: query
+        name: error_type
+        type: string
+      - description: 关键词搜索
+        in: query
+        name: keyword
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功，返回报错记录分页列表
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.PageData'
+                  - properties:
+                      list:
+                        items:
+                          $ref: '#/definitions/model.ErrorRecord'
+                        type: array
+                    type: object
+              type: object
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取报错记录分页列表
+      tags:
+      - 管理员/报错管理
+  /admin/error/records/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取报错记录的详细信息
+      parameters:
+      - description: 报错记录ID
+        example: 1
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回报错记录详情
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ErrorRecord'
+              type: object
+        "400":
+          description: 请求参数错误，无效的ID
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 报错记录不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取报错记录详情
+      tags:
+      - 管理员/报错管理
+  /admin/error/records/{id}/remark:
+    put:
+      consumes:
+      - application/json
+      description: 更新指定报错记录的备注信息
+      parameters:
+      - description: 报错记录ID
+        example: 1
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: 更新备注请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateRemarkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: 报错记录不存在
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 更新报错记录备注
+      tags:
+      - 管理员/报错管理
+  /admin/error/report:
+    post:
+      consumes:
+      - application/json
+      description: 上报单条接口报错信息到平台，系统会自动识别报错类型（无需JWT认证）
+      parameters:
+      - description: 报错上报请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ErrorReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 上报成功，返回创建的报错记录
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ErrorRecord'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 单条报错上报
+      tags:
+      - 管理员/报错管理
+  /admin/error/report/batch:
+    post:
+      consumes:
+      - application/json
+      description: 批量上报多条接口报错信息，最多100条（无需JWT认证）
+      parameters:
+      - description: 批量报错上报请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.BatchErrorReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 上报成功，返回成功数量和失败数量
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 批量报错上报
+      tags:
+      - 管理员/报错管理
+  /admin/error/statistics/module:
+    get:
+      consumes:
+      - application/json
+      description: 查询指定时间范围内各模块的报错统计
+      parameters:
+      - description: 开始日期，格式：YYYY-MM-DD
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: 结束日期，格式：YYYY-MM-DD
+        in: query
+        name: end_date
+        required: true
+        type: string
+      - description: 应用类型：app/platform
+        in: query
+        name: app_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回模块统计数据
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/service.ModuleStat'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取报错模块统计
+      tags:
+      - 管理员/报错管理
+  /admin/error/statistics/trend:
+    get:
+      consumes:
+      - application/json
+      description: 查询指定时间范围内的报错趋势统计
+      parameters:
+      - description: 开始日期，格式：YYYY-MM-DD
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: 结束日期，格式：YYYY-MM-DD
+        in: query
+        name: end_date
+        required: true
+        type: string
+      - description: 应用类型：app/platform
+        in: query
+        name: app_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回趋势统计数据
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.TrendStatistics'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 获取报错趋势统计
+      tags:
+      - 管理员/报错管理
   /admin/mcp-credentials:
     get:
       consumes:

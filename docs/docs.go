@@ -1207,6 +1207,622 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/error/modules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "获取系统中所有的报错模块列表，用于筛选条件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "获取所有报错模块列表",
+                "responses": {
+                    "200": {
+                        "description": "返回模块列表",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "未认证访问",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/error/records": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "分页查询报错记录列表，支持按时间、应用类型、模块、报错类型等条件筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "获取报错记录分页列表",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 20,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "开始时间戳（毫秒）",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "结束时间戳（毫秒）",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "应用类型：app/platform",
+                        "name": "app_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "报错模块",
+                        "name": "module",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "报错类型：system_error/business_error",
+                        "name": "error_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关键词搜索",
+                        "name": "keyword",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功，返回报错记录分页列表",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.PageData"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "list": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/model.ErrorRecord"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "未认证访问",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/error/records/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "根据ID获取报错记录的详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "获取报错记录详情",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 1,
+                        "description": "报错记录ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回报错记录详情",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ErrorRecord"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误，无效的ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未认证访问",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "报错记录不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/error/records/{id}/remark": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "更新指定报错记录的备注信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "更新报错记录备注",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 1,
+                        "description": "报错记录ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新备注请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateRemarkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未认证访问",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "报错记录不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/error/report": {
+            "post": {
+                "description": "上报单条接口报错信息到平台，系统会自动识别报错类型（无需JWT认证）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "单条报错上报",
+                "parameters": [
+                    {
+                        "description": "报错上报请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "上报成功，返回创建的报错记录",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.ErrorRecord"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/error/report/batch": {
+            "post": {
+                "description": "批量上报多条接口报错信息，最多100条（无需JWT认证）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "批量报错上报",
+                "parameters": [
+                    {
+                        "description": "批量报错上报请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.BatchErrorReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "上报成功，返回成功数量和失败数量",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/error/statistics/module": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "查询指定时间范围内各模块的报错统计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "获取报错模块统计",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "开始日期，格式：YYYY-MM-DD",
+                        "name": "start_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束日期，格式：YYYY-MM-DD",
+                        "name": "end_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "应用类型：app/platform",
+                        "name": "app_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回模块统计数据",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/service.ModuleStat"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未认证访问",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/error/statistics/trend": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "查询指定时间范围内的报错趋势统计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "获取报错趋势统计",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "开始日期，格式：YYYY-MM-DD",
+                        "name": "start_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束日期，格式：YYYY-MM-DD",
+                        "name": "end_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "应用类型：app/platform",
+                        "name": "app_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回趋势统计数据",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/service.TrendStatistics"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未认证访问",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/mcp-credentials": {
             "get": {
                 "security": [
@@ -3626,6 +4242,22 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handler.BatchErrorReportRequest": {
+            "type": "object",
+            "required": [
+                "records"
+            ],
+            "properties": {
+                "records": {
+                    "description": "报错记录列表（最多100条）",
+                    "type": "array",
+                    "maxItems": 100,
+                    "items": {
+                        "$ref": "#/definitions/handler.ErrorReportRequest"
+                    }
+                }
+            }
+        },
         "handler.CreateCategoryRequest": {
             "type": "object",
             "required": [
@@ -3685,6 +4317,64 @@ const docTemplate = `{
                         "read_write"
                     ],
                     "example": "read_only"
+                }
+            }
+        },
+        "handler.ErrorReportRequest": {
+            "type": "object",
+            "required": [
+                "app_type",
+                "code",
+                "device_info",
+                "error_message",
+                "request_id",
+                "timestamp"
+            ],
+            "properties": {
+                "app_type": {
+                    "description": "应用类型：app/platform（必填）",
+                    "type": "string",
+                    "example": "app"
+                },
+                "code": {
+                    "description": "接口返回的错误码（必填）",
+                    "type": "string",
+                    "example": "500"
+                },
+                "device_info": {
+                    "description": "设备信息（必填）",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "error_message": {
+                    "description": "接口返回的消息信息（必填）",
+                    "type": "string",
+                    "example": "Internal Server Error"
+                },
+                "error_type": {
+                    "description": "报错类型：system_error/business_error（非必填，系统自动识别）",
+                    "type": "string",
+                    "example": "system_error"
+                },
+                "module": {
+                    "description": "报错模块（自动识别，非必填）",
+                    "type": "string",
+                    "example": "user"
+                },
+                "request_id": {
+                    "description": "接口请求唯一标识（必填）",
+                    "type": "string",
+                    "example": "req-20260330-001"
+                },
+                "request_params": {
+                    "description": "接口入参（非必填）",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "timestamp": {
+                    "description": "报错发生时间戳（毫秒，必填）",
+                    "type": "integer",
+                    "example": 1711737600000
                 }
             }
         },
@@ -3919,6 +4609,19 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.UpdateRemarkRequest": {
+            "type": "object",
+            "required": [
+                "remark"
+            ],
+            "properties": {
+                "remark": {
+                    "description": "备注信息",
+                    "type": "string",
+                    "example": "已处理，问题已解决"
+                }
+            }
+        },
         "handler.UserCreateRequest": {
             "type": "object",
             "required": [
@@ -4090,6 +4793,86 @@ const docTemplate = `{
                     "example": "2024-03-12T15:30:00Z"
                 }
             }
+        },
+        "model.ErrorRecord": {
+            "type": "object",
+            "properties": {
+                "app_type": {
+                    "description": "应用类型：app/platform",
+                    "type": "string",
+                    "example": "app"
+                },
+                "code": {
+                    "description": "接口返回的错误码",
+                    "type": "string",
+                    "example": "500"
+                },
+                "created_at": {
+                    "description": "创建时间",
+                    "type": "string",
+                    "example": "2026-03-30T10:00:00Z"
+                },
+                "device_info": {
+                    "description": "设备信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.JSONMap"
+                        }
+                    ]
+                },
+                "error_message": {
+                    "description": "接口返回的消息信息",
+                    "type": "string",
+                    "example": "Internal Server Error"
+                },
+                "error_type": {
+                    "description": "报错类型：system_error/business_error",
+                    "type": "string",
+                    "example": "system_error"
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "integer",
+                    "example": 1
+                },
+                "module": {
+                    "description": "报错模块（自动识别）",
+                    "type": "string",
+                    "example": "user"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "example": "已处理"
+                },
+                "request_id": {
+                    "description": "接口请求唯一标识",
+                    "type": "string",
+                    "example": "req-20260330-001"
+                },
+                "request_params": {
+                    "description": "接口入参",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.JSONMap"
+                        }
+                    ]
+                },
+                "timestamp": {
+                    "description": "报错发生时间戳（毫秒）",
+                    "type": "integer",
+                    "example": 1711737600000
+                },
+                "updated_at": {
+                    "description": "更新时间",
+                    "type": "string",
+                    "example": "2026-03-30T15:30:00Z"
+                }
+            }
+        },
+        "model.JSONMap": {
+            "type": "object",
+            "additionalProperties": true
         },
         "model.MCPCredential": {
             "type": "object",
@@ -4464,6 +5247,45 @@ const docTemplate = `{
                 "description": {
                     "type": "string",
                     "maxLength": 200
+                }
+            }
+        },
+        "service.ModuleStat": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "error_type": {
+                    "type": "string"
+                },
+                "module": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.TrendData": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.TrendStatistics": {
+            "type": "object",
+            "properties": {
+                "total_count": {
+                    "type": "integer"
+                },
+                "trend": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.TrendData"
+                    }
                 }
             }
         },
