@@ -1196,6 +1196,92 @@
                 }
             }
         },
+        "/admin/error/export": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth ": [
+                            ""
+                        ]
+                    }
+                ],
+                "description": "根据筛选条件将报错记录导出为 Excel 文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "管理员/报错管理"
+                ],
+                "summary": "导出报错记录到 Excel",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "开始时间戳（毫秒）",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "结束时间戳（毫秒）",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "应用类型：app/platform",
+                        "name": "app_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "报错模块",
+                        "name": "module",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "报错类型：system_error/business_error",
+                        "name": "error_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关键词搜索",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否为语义化报错：true=是, false=否",
+                        "name": "is_semantic",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel 文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "未认证访问",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/error/modules": {
             "get": {
                 "security": [
@@ -1262,7 +1348,7 @@
                         ]
                     }
                 ],
-                "description": "分页查询报错记录列表，支持按时间、应用类型、模块、报错类型等条件筛选",
+                "description": "分页查询报错记录列表，支持按时间、应用类型、模块、报错类型、是否语义化等条件筛选",
                 "consumes": [
                     "application/json"
                 ],
@@ -1325,6 +1411,12 @@
                         "type": "string",
                         "description": "关键词搜索",
                         "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否为语义化报错：true=是, false=否",
+                        "name": "is_semantic",
                         "in": "query"
                     }
                 ],

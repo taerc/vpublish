@@ -1549,6 +1549,61 @@ paths:
       summary: 根据代码获取类别详情
       tags:
       - 管理员/类别管理
+  /admin/error/export:
+    get:
+      consumes:
+      - application/json
+      description: 根据筛选条件将报错记录导出为 Excel 文件
+      parameters:
+      - description: 开始时间戳（毫秒）
+        in: query
+        name: start_time
+        type: integer
+      - description: 结束时间戳（毫秒）
+        in: query
+        name: end_time
+        type: integer
+      - description: 应用类型：app/platform
+        in: query
+        name: app_type
+        type: string
+      - description: 报错模块
+        in: query
+        name: module
+        type: string
+      - description: 报错类型：system_error/business_error
+        in: query
+        name: error_type
+        type: string
+      - description: 关键词搜索
+        in: query
+        name: keyword
+        type: string
+      - description: 是否为语义化报错：true=是, false=否
+        in: query
+        name: is_semantic
+        type: boolean
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel 文件
+          schema:
+            type: file
+        "401":
+          description: 未认证访问
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - 'BearerAuth ':
+        - ""
+      summary: 导出报错记录到 Excel
+      tags:
+      - 管理员/报错管理
   /admin/error/modules:
     get:
       consumes:
@@ -1586,7 +1641,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 分页查询报错记录列表，支持按时间、应用类型、模块、报错类型等条件筛选
+      description: 分页查询报错记录列表，支持按时间、应用类型、模块、报错类型、是否语义化等条件筛选
       parameters:
       - default: 1
         description: 页码
@@ -1625,6 +1680,10 @@ paths:
         in: query
         name: keyword
         type: string
+      - description: 是否为语义化报错：true=是, false=否
+        in: query
+        name: is_semantic
+        type: boolean
       produces:
       - application/json
       responses:
