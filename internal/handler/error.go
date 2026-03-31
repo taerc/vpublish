@@ -2,6 +2,7 @@ package handler
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/taerc/vpublish/internal/service"
@@ -26,8 +27,6 @@ type ErrorReportRequest struct {
 	Timestamp int64 `json:"timestamp" binding:"required" example:"1711737600000"`
 	// 报错模块（自动识别，非必填）
 	Module string `json:"module" example:"user"`
-	// 应用类型：app/platform（必填）
-	AppType string `json:"app_type" binding:"required" example:"app"`
 	// 接口返回的错误码（必填）
 	Code string `json:"code" binding:"required" example:"500"`
 	// 接口返回的消息信息（必填）
@@ -48,8 +47,8 @@ type BatchErrorReportRequest struct {
 
 // Report 单条报错上报
 //
-// @Summary 单条报错上报
-// @Description 上报单条接口报错信息到平台，系统会自动识别报错类型（无需JWT认证）
+// @Summary 单条报错上报（Platform端）
+// @Description 上报单条接口报错信息到平台，系统会自动识别报错类型和app_type（无需JWT认证）
 // @Tags 管理员/报错管理
 // @Accept json
 // @Produce json
@@ -65,12 +64,18 @@ func (h *ErrorReportHandler) Report(c *gin.Context) {
 		return
 	}
 
+	// 根据请求路径自动判断 app_type
+	appType := "platform"
+	if strings.HasPrefix(c.Request.URL.Path, "/api/v1/app/") {
+		appType = "app"
+	}
+
 	// 转换为service层请求
 	svcReq := &service.ErrorReportRequest{
 		RequestID:     req.RequestID,
 		Timestamp:     req.Timestamp,
 		Module:        req.Module,
-		AppType:       req.AppType,
+		AppType:       appType,
 		Code:          req.Code,
 		ErrorMessage:  req.ErrorMessage,
 		ErrorType:     req.ErrorType,
@@ -106,6 +111,12 @@ func (h *ErrorReportHandler) BatchReport(c *gin.Context) {
 		return
 	}
 
+	// 根据请求路径自动判断 app_type
+	appType := "platform"
+	if strings.HasPrefix(c.Request.URL.Path, "/api/v1/app/") {
+		appType = "app"
+	}
+
 	// 转换为service层请求
 	var svcReqs []*service.ErrorReportRequest
 	for _, r := range req.Records {
@@ -113,7 +124,7 @@ func (h *ErrorReportHandler) BatchReport(c *gin.Context) {
 			RequestID:     r.RequestID,
 			Timestamp:     r.Timestamp,
 			Module:        r.Module,
-			AppType:       r.AppType,
+			AppType:       appType,
 			Code:          r.Code,
 			ErrorMessage:  r.ErrorMessage,
 			ErrorType:     r.ErrorType,

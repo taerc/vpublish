@@ -34,7 +34,7 @@ type ErrorReportRequest struct {
 	RequestID     string                 `json:"request_id" binding:"required"`
 	Timestamp     int64                  `json:"timestamp" binding:"required"`
 	Module        string                 `json:"module"`
-	AppType       string                 `json:"app_type" binding:"required"`
+	AppType       string                 `json:"app_type"`
 	Code          string                 `json:"code" binding:"required"`
 	ErrorMessage  string                 `json:"error_message" binding:"required"`
 	ErrorType     string                 `json:"error_type"`

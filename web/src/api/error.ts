@@ -38,7 +38,6 @@ export interface ErrorReportRequest {
   request_id: string
   timestamp: number
   module?: string
-  app_type: string
   code: string
   error_message: string
   error_type?: string
