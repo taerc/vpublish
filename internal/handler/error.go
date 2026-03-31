@@ -47,8 +47,8 @@ type BatchErrorReportRequest struct {
 
 // Report 单条报错上报
 //
-// @Summary 单条报错上报（Platform端）
-// @Description 上报单条接口报错信息到平台，系统会自动识别报错类型和app_type（无需JWT认证）
+// @Summary 单条报错上报
+// @Description 上报单条接口报错信息到平台。系统会根据报错的原始接口路径自动识别 app_type：\n- app：报错来自 /api/v1/app/* 接口（移动APP端）\n- platform：报错来自 /api/v1/admin/* 接口（管理后台平台端）\n\n无需 JWT 认证
 // @Tags 管理员/报错管理
 // @Accept json
 // @Produce json
@@ -95,7 +95,7 @@ func (h *ErrorReportHandler) Report(c *gin.Context) {
 // BatchReport 批量报错上报
 //
 // @Summary 批量报错上报
-// @Description 批量上报多条接口报错信息，最多100条（无需JWT认证）
+// @Description 批量上报多条接口报错信息，最多100条。系统会根据报错的原始接口路径自动识别 app_type：\n- app：报错来自 /api/v1/app/* 接口（移动APP端）\n- platform：报错来自 /api/v1/admin/* 接口（管理后台平台端）\n\n无需 JWT 认证
 // @Tags 管理员/报错管理
 // @Accept json
 // @Produce json
@@ -156,7 +156,7 @@ type ErrorRecordQuery struct {
 	StartTime int64 `form:"start_time" example:"1711737600000"`
 	// 结束时间戳（毫秒）
 	EndTime int64 `form:"end_time" example:"1711824000000"`
-	// 应用类型：app/platform
+	// 应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
 	AppType string `form:"app_type" example:"app"`
 	// 报错模块
 	Module string `form:"module" example:"user"`
@@ -179,9 +179,9 @@ type ErrorRecordQuery struct {
 // @Param page_size query int false "每页数量" minimum(1) maximum(100) default(20)
 // @Param start_time query int false "开始时间戳（毫秒）"
 // @Param end_time query int false "结束时间戳（毫秒）"
-// @Param app_type query string false "应用类型：app/platform"
+// @Param app_type query string false "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）" Enums(app, platform)
 // @Param module query string false "报错模块"
-// @Param error_type query string false "报错类型：system_error/business_error"
+// @Param error_type query string false "报错类型：system_error/business_error" Enums(system_error, business_error)
 // @Param keyword query string false "关键词搜索"
 // @Param is_semantic query bool false "是否为语义化报错：true=是, false=否"
 // @Success 200 {object} response.Response{data=response.PageData{list=[]model.ErrorRecord}} "获取成功，返回报错记录分页列表"
@@ -331,7 +331,7 @@ type TrendQuery struct {
 	StartDate string `form:"start_date" binding:"required" example:"2026-03-01"`
 	// 结束日期，格式：YYYY-MM-DD
 	EndDate string `form:"end_date" binding:"required" example:"2026-03-30"`
-	// 应用类型：app/platform
+	// 应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
 	AppType string `form:"app_type" example:"app"`
 }
 
@@ -344,7 +344,7 @@ type TrendQuery struct {
 // @Produce json
 // @Param start_date query string true "开始日期，格式：YYYY-MM-DD"
 // @Param end_date query string true "结束日期，格式：YYYY-MM-DD"
-// @Param app_type query string false "应用类型：app/platform"
+// @Param app_type query string false "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）" Enums(app, platform)
 // @Success 200 {object} response.Response{data=service.TrendStatistics} "返回趋势统计数据"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 401 {object} response.Response "未认证访问"
@@ -376,7 +376,7 @@ func (h *ErrorReportHandler) GetTrend(c *gin.Context) {
 // @Produce json
 // @Param start_date query string true "开始日期，格式：YYYY-MM-DD"
 // @Param end_date query string true "结束日期，格式：YYYY-MM-DD"
-// @Param app_type query string false "应用类型：app/platform"
+// @Param app_type query string false "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）" Enums(app, platform)
 // @Success 200 {object} response.Response{data=[]service.ModuleStat} "返回模块统计数据"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 401 {object} response.Response "未认证访问"
@@ -408,9 +408,9 @@ func (h *ErrorReportHandler) GetModuleStats(c *gin.Context) {
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 // @Param start_time query int false "开始时间戳（毫秒）"
 // @Param end_time query int false "结束时间戳（毫秒）"
-// @Param app_type query string false "应用类型：app/platform"
+// @Param app_type query string false "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）" Enums(app, platform)
 // @Param module query string false "报错模块"
-// @Param error_type query string false "报错类型：system_error/business_error"
+// @Param error_type query string false "报错类型：system_error/business_error" Enums(system_error, business_error)
 // @Param keyword query string false "关键词搜索"
 // @Param is_semantic query bool false "是否为语义化报错：true=是, false=否"
 // @Success 200 {file} file "Excel 文件"

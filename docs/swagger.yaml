@@ -60,10 +60,6 @@ definitions:
     type: object
   handler.ErrorReportRequest:
     properties:
-      app_type:
-        description: 应用类型：app/platform（必填）
-        example: app
-        type: string
       code:
         description: 接口返回的错误码（必填）
         example: "500"
@@ -97,7 +93,6 @@ definitions:
         example: 1711737600000
         type: integer
     required:
-    - app_type
     - code
     - device_info
     - error_message
@@ -428,7 +423,9 @@ definitions:
   model.ErrorRecord:
     properties:
       app_type:
-        description: 应用类型：app/platform
+        description: |-
+          应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
+          系统根据报错的原始接口路径自动识别
         example: app
         type: string
       code:
@@ -1563,7 +1560,10 @@ paths:
         in: query
         name: end_time
         type: integer
-      - description: 应用类型：app/platform
+      - description: 应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
+        enum:
+        - app
+        - platform
         in: query
         name: app_type
         type: string
@@ -1572,6 +1572,9 @@ paths:
         name: module
         type: string
       - description: 报错类型：system_error/business_error
+        enum:
+        - system_error
+        - business_error
         in: query
         name: error_type
         type: string
@@ -1664,7 +1667,10 @@ paths:
         in: query
         name: end_time
         type: integer
-      - description: 应用类型：app/platform
+      - description: 应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
+        enum:
+        - app
+        - platform
         in: query
         name: app_type
         type: string
@@ -1673,6 +1679,9 @@ paths:
         name: module
         type: string
       - description: 报错类型：system_error/business_error
+        enum:
+        - system_error
+        - business_error
         in: query
         name: error_type
         type: string
@@ -1816,7 +1825,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: 上报单条接口报错信息到平台，系统会自动识别报错类型（无需JWT认证）
+      description: 上报单条接口报错信息到平台。系统会根据报错的原始接口路径自动识别 app_type：\n- app：报错来自 /api/v1/app/*
+        接口（移动APP端）\n- platform：报错来自 /api/v1/admin/* 接口（管理后台平台端）\n\n无需 JWT 认证
       parameters:
       - description: 报错上报请求参数
         in: body
@@ -1851,7 +1861,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: 批量上报多条接口报错信息，最多100条（无需JWT认证）
+      description: 批量上报多条接口报错信息，最多100条。系统会根据报错的原始接口路径自动识别 app_type：\n- app：报错来自 /api/v1/app/*
+        接口（移动APP端）\n- platform：报错来自 /api/v1/admin/* 接口（管理后台平台端）\n\n无需 JWT 认证
       parameters:
       - description: 批量报错上报请求参数
         in: body
@@ -1899,7 +1910,10 @@ paths:
         name: end_date
         required: true
         type: string
-      - description: 应用类型：app/platform
+      - description: 应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
+        enum:
+        - app
+        - platform
         in: query
         name: app_type
         type: string
@@ -1951,7 +1965,10 @@ paths:
         name: end_date
         required: true
         type: string
-      - description: 应用类型：app/platform
+      - description: 应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
+        enum:
+        - app
+        - platform
         in: query
         name: app_type
         type: string

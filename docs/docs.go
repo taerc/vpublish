@@ -1241,8 +1241,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "app",
+                            "platform"
+                        ],
                         "type": "string",
-                        "description": "应用类型：app/platform",
+                        "description": "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）",
                         "name": "app_type",
                         "in": "query"
                     },
@@ -1253,6 +1257,10 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "system_error",
+                            "business_error"
+                        ],
                         "type": "string",
                         "description": "报错类型：system_error/business_error",
                         "name": "error_type",
@@ -1401,8 +1409,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "app",
+                            "platform"
+                        ],
                         "type": "string",
-                        "description": "应用类型：app/platform",
+                        "description": "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）",
                         "name": "app_type",
                         "in": "query"
                     },
@@ -1413,6 +1425,10 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "system_error",
+                            "business_error"
+                        ],
                         "type": "string",
                         "description": "报错类型：system_error/business_error",
                         "name": "error_type",
@@ -1633,7 +1649,7 @@ const docTemplate = `{
         },
         "/admin/error/report": {
             "post": {
-                "description": "上报单条接口报错信息到平台，系统会自动识别报错类型（无需JWT认证）",
+                "description": "上报单条接口报错信息到平台。系统会根据报错的原始接口路径自动识别 app_type：\\n- app：报错来自 /api/v1/app/* 接口（移动APP端）\\n- platform：报错来自 /api/v1/admin/* 接口（管理后台平台端）\\n\\n无需 JWT 认证",
                 "consumes": [
                     "application/json"
                 ],
@@ -1691,7 +1707,7 @@ const docTemplate = `{
         },
         "/admin/error/report/batch": {
             "post": {
-                "description": "批量上报多条接口报错信息，最多100条（无需JWT认证）",
+                "description": "批量上报多条接口报错信息，最多100条。系统会根据报错的原始接口路径自动识别 app_type：\\n- app：报错来自 /api/v1/app/* 接口（移动APP端）\\n- platform：报错来自 /api/v1/admin/* 接口（管理后台平台端）\\n\\n无需 JWT 认证",
                 "consumes": [
                     "application/json"
                 ],
@@ -1784,8 +1800,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "app",
+                            "platform"
+                        ],
                         "type": "string",
-                        "description": "应用类型：app/platform",
+                        "description": "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）",
                         "name": "app_type",
                         "in": "query"
                     }
@@ -1869,8 +1889,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "app",
+                            "platform"
+                        ],
                         "type": "string",
-                        "description": "应用类型：app/platform",
+                        "description": "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）",
                         "name": "app_type",
                         "in": "query"
                     }
@@ -4415,7 +4439,6 @@ const docTemplate = `{
         "handler.ErrorReportRequest": {
             "type": "object",
             "required": [
-                "app_type",
                 "code",
                 "device_info",
                 "error_message",
@@ -4423,11 +4446,6 @@ const docTemplate = `{
                 "timestamp"
             ],
             "properties": {
-                "app_type": {
-                    "description": "应用类型：app/platform（必填）",
-                    "type": "string",
-                    "example": "app"
-                },
                 "code": {
                     "description": "接口返回的错误码（必填）",
                     "type": "string",
@@ -4890,7 +4908,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "app_type": {
-                    "description": "应用类型：app/platform",
+                    "description": "应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）\n系统根据报错的原始接口路径自动识别",
                     "type": "string",
                     "example": "app"
                 },

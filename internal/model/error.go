@@ -18,7 +18,8 @@ type ErrorRecord struct {
 	Timestamp int64 `gorm:"not null;index" json:"timestamp" example:"1711737600000"`
 	// 报错模块（自动识别）
 	Module string `gorm:"size:64;index" json:"module" example:"user"`
-	// 应用类型：app/platform
+	// 应用类型：app（来自 /api/v1/app/* 接口）/platform（来自 /api/v1/admin/* 接口）
+	// 系统根据报错的原始接口路径自动识别
 	AppType string `gorm:"size:32;not null;index" json:"app_type" example:"app"`
 	// 接口返回的错误码
 	Code string `gorm:"size:64;not null;index" json:"code" example:"500"`
