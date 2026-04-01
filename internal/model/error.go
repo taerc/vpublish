@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // ErrorRecord 报错记录模型
@@ -12,8 +14,8 @@ import (
 type ErrorRecord struct {
 	// 主键ID
 	ID uint `gorm:"primaryKey" json:"id" example:"1"`
-	// 接口请求唯一标识
-	RequestID string `gorm:"size:128;not null;index" json:"request_id" example:"req-20260330-001"`
+	// 接口请求唯一标识（唯一索引，不允许重复）
+	RequestID string `gorm:"size:128;not null;uniqueIndex" json:"request_id" example:"req-20260330-001"`
 	// 报错发生时间戳（毫秒）
 	Timestamp int64 `gorm:"not null;index" json:"timestamp" example:"1711737600000"`
 	// 报错模块（自动识别）
@@ -37,6 +39,8 @@ type ErrorRecord struct {
 	CreatedAt time.Time `json:"created_at" example:"2026-03-30T10:00:00Z"`
 	// 更新时间
 	UpdatedAt time.Time `json:"updated_at" example:"2026-03-30T15:30:00Z"`
+	// 软删除时间
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // TableName 表名

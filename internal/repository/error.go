@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/taerc/vpublish/internal/model"
 	"gorm.io/gorm"
@@ -53,6 +54,24 @@ func (r *ErrorRecordRepository) GetByRequestID(ctx context.Context, requestID st
 		return nil, err
 	}
 	return &record, nil
+}
+
+// ExistsByRequestID 检查 request_id 是否已存在
+func (r *ErrorRecordRepository) ExistsByRequestID(ctx context.Context, requestID string) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&model.ErrorRecord{}).
+		Where("request_id = ?", requestID).
+		Count(&count).Error
+	return count > 0, err
+}
+
+// GetExistingRequestIDs 批量检查哪些 request_id 已存在
+func (r *ErrorRecordRepository) GetExistingRequestIDs(ctx context.Context, requestIDs []string) ([]string, error) {
+	var existingIDs []string
+	err := r.db.WithContext(ctx).Model(&model.ErrorRecord{}).
+		Where("request_id IN ?", requestIDs).
+		Pluck("request_id", &existingIDs).Error
+	return existingIDs, err
 }
 
 // ListQuery 查询参数
@@ -107,11 +126,11 @@ func (r *ErrorRecordRepository) List(ctx context.Context, query *ErrorRecordList
 	// 语义化报错筛选
 	if query.IsSemantic != nil {
 		if *query.IsSemantic {
-			// 是语义化报错：包含中文字符
-			db = db.Where("error_message REGEXP ?", "[\\u4e00-\\u9fa5]")
+			// 是语义化报错：包含中文字符（使用MySQL兼容的正则表达式）
+			db = db.Where("error_message REGEXP ?", "[一-龥]")
 		} else {
 			// 不是语义化报错：不包含中文字符
-			db = db.Where("error_message NOT REGEXP ?", "[\\u4e00-\\u9fa5]")
+			db = db.Where("error_message NOT REGEXP ?", "[一-龥]")
 		}
 	}
 
@@ -163,15 +182,25 @@ func (r *ErrorRecordRepository) GetTrend(ctx context.Context, startDate, endDate
 		Count int
 	}
 
+	// 将日期转换为时间戳（毫秒），避免使用函数以利用索引
+	startTime, err := dateToTimestamp(startDate, "00:00:00")
+	if err != nil {
+		return nil, err
+	}
+	endTime, err := dateToTimestamp(endDate, "23:59:59")
+	if err != nil {
+		return nil, err
+	}
+
 	query := r.db.WithContext(ctx).Model(&model.ErrorRecord{}).
 		Select("DATE(FROM_UNIXTIME(timestamp/1000)) as date, COUNT(*) as count").
-		Where("DATE(FROM_UNIXTIME(timestamp/1000)) >= ? AND DATE(FROM_UNIXTIME(timestamp/1000)) <= ?", startDate, endDate)
+		Where("timestamp >= ? AND timestamp <= ?", startTime, endTime)
 
 	if appType != "" {
 		query = query.Where("app_type = ?", appType)
 	}
 
-	err := query.Group("DATE(FROM_UNIXTIME(timestamp/1000))").
+	err = query.Group("DATE(FROM_UNIXTIME(timestamp/1000))").
 		Order("date ASC").
 		Find(&results).Error
 
@@ -201,15 +230,25 @@ func (r *ErrorRecordRepository) GetModuleStats(ctx context.Context, startDate, e
 		Count     int
 	}
 
+	// 将日期转换为时间戳（毫秒），避免使用函数以利用索引
+	startTime, err := dateToTimestamp(startDate, "00:00:00")
+	if err != nil {
+		return nil, err
+	}
+	endTime, err := dateToTimestamp(endDate, "23:59:59")
+	if err != nil {
+		return nil, err
+	}
+
 	query := r.db.WithContext(ctx).Model(&model.ErrorRecord{}).
 		Select("module, error_type, COUNT(*) as count").
-		Where("DATE(FROM_UNIXTIME(timestamp/1000)) >= ? AND DATE(FROM_UNIXTIME(timestamp/1000)) <= ?", startDate, endDate)
+		Where("timestamp >= ? AND timestamp <= ?", startTime, endTime)
 
 	if appType != "" {
 		query = query.Where("app_type = ?", appType)
 	}
 
-	err := query.Group("module, error_type").
+	err = query.Group("module, error_type").
 		Order("count DESC").
 		Find(&results).Error
 
@@ -222,4 +261,15 @@ func (r *ErrorRecordRepository) GetModuleStats(ctx context.Context, startDate, e
 		items[i] = ModuleStatItem{Module: r.Module, ErrorType: r.ErrorType, Count: r.Count}
 	}
 	return items, nil
+}
+
+// dateToTimestamp 将日期字符串和时间字符串转换为时间戳（毫秒）
+func dateToTimestamp(dateStr, timeStr string) (int64, error) {
+	layout := "2006-01-02 15:04:05"
+	dateTime := dateStr + " " + timeStr
+	t, err := time.Parse(layout, dateTime)
+	if err != nil {
+		return 0, err
+	}
+	return t.Unix() * 1000, nil
 }

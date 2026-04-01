@@ -1,0 +1,38 @@
+server:
+  port: 8080
+  mode: release
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  host: db-server
+  port: 3306
+  user: vpublish
+  password: your-password
+  dbname: vpublish
+  max_open_conns: 100
+  max_idle_conns: 10
+
+jwt:
+  secret: your-jwt-secret-key
+  expire: 24h
+  refresh_expire: 168h
+
+storage:
+  type: local
+  path: ./uploads
+  max_file_size: 104857600
+  external_download_url_prefix: ""
+
+log:
+  level: info
+
+mcp:
+  http:
+    enabled: true
+    host: 0.0.0.0
+    port: 8081
+    endpoint_path: /mcp
+  auth:
+    app_key: "your-mcp-app-key"
+    app_secret: "your-mcp-app-secret"

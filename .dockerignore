@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+bin/
+build/
+dist/
+tmp/
+
+# Node modules
+web/node_modules/
+web/dist/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# Test files
+*_test.go
+coverage.out
+coverage.html
+
+# Documentation
+*.md
+!README.md
+
+# Other
+vpublish-server.exe
+vpublish-server
+test_*.go

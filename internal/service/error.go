@@ -44,6 +44,15 @@ type ErrorReportRequest struct {
 
 // Report 上报单条报错记录
 func (s *ErrorReportService) Report(ctx context.Context, req *ErrorReportRequest) (*model.ErrorRecord, error) {
+	// 检查 request_id 是否已存在
+	exists, err := s.recordRepo.ExistsByRequestID(ctx, req.RequestID)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, errors.New("request_id already exists")
+	}
+
 	record := &model.ErrorRecord{
 		RequestID:     req.RequestID,
 		Timestamp:     req.Timestamp,
@@ -73,9 +82,34 @@ func (s *ErrorReportService) Report(ctx context.Context, req *ErrorReportRequest
 func (s *ErrorReportService) BatchReport(ctx context.Context, reqs []*ErrorReportRequest) (int, int, []uint, error) {
 	var records []*model.ErrorRecord
 	var successCount int
+	var failedCount int
 	var recordIDs []uint
 
+	// 收集所有需要检查的 request_id
+	requestIDs := make([]string, 0, len(reqs))
 	for _, req := range reqs {
+		requestIDs = append(requestIDs, req.RequestID)
+	}
+
+	// 批量检查哪些 request_id 已存在
+	existingIDs, err := s.recordRepo.GetExistingRequestIDs(ctx, requestIDs)
+	if err != nil {
+		return 0, len(reqs), nil, err
+	}
+
+	// 构建已存在的 request_id 的集合，用于快速查找
+	existingSet := make(map[string]bool)
+	for _, id := range existingIDs {
+		existingSet[id] = true
+	}
+
+	for _, req := range reqs {
+		// 检查 request_id 是否已存在
+		if existingSet[req.RequestID] {
+			failedCount++
+			continue
+		}
+
 		record := &model.ErrorRecord{
 			RequestID:     req.RequestID,
 			Timestamp:     req.Timestamp,
@@ -97,16 +131,19 @@ func (s *ErrorReportService) BatchReport(ctx context.Context, reqs []*ErrorRepor
 		records = append(records, record)
 	}
 
-	if err := s.recordRepo.CreateBatch(ctx, records); err != nil {
-		return 0, len(reqs), nil, err
+	// 批量创建新记录
+	if len(records) > 0 {
+		if err := s.recordRepo.CreateBatch(ctx, records); err != nil {
+			return 0, len(reqs), nil, err
+		}
+
+		for _, record := range records {
+			successCount++
+			recordIDs = append(recordIDs, record.ID)
+		}
 	}
 
-	for _, record := range records {
-		successCount++
-		recordIDs = append(recordIDs, record.ID)
-	}
-
-	return successCount, 0, recordIDs, nil
+	return successCount, failedCount, recordIDs, nil
 }
 
 // detectErrorType 智能识别报错类型
