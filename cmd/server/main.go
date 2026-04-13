@@ -58,6 +58,7 @@ import (
 	"github.com/taerc/vpublish/internal/database"
 	"github.com/taerc/vpublish/internal/handler"
 	"github.com/taerc/vpublish/internal/middleware"
+	"github.com/taerc/vpublish/internal/queue"
 	"github.com/taerc/vpublish/internal/repository"
 	"github.com/taerc/vpublish/internal/service"
 	"github.com/taerc/vpublish/internal/version"
@@ -113,7 +114,16 @@ func main() {
 	statsService := service.NewStatsService(statsRepo)
 	appKeyService := service.NewAppKeyService(appKeyRepo)
 	mcpCredService := service.NewMCPCredentialService(mcpCredRepo)
-	errorReportService := service.NewErrorReportService(errorRecordRepo)
+
+	// 初始化错误队列
+	// 队列大小: 10000, 批量大小: 100, 刷新间隔: 5秒
+	errorQueue := queue.NewErrorQueue(errorRecordRepo, 10000, 100, 5*time.Second)
+
+	// 启动错误队列处理协程
+	go errorQueue.Start()
+
+	// 创建服务（注入错误队列）
+	errorReportService := service.NewErrorReportService(errorRecordRepo, errorQueue)
 
 	// 初始化 Handler
 	authHandler := handler.NewAuthHandler(userService, jwtService)
@@ -133,7 +143,7 @@ func main() {
 	r.Use(middleware.CORS(&cfg.CORS))
 
 	setupRoutes(r, authHandler, userHandler, categoryHandler, packageHandler, statsHandler,
-		appKeyHandler, mcpCredHandler, errorReportHandler, jwtService, appKeyRepo, cfg.Server.Mode)
+		appKeyHandler, mcpCredHandler, errorReportHandler, jwtService, appKeyRepo, cfg)
 
 	// 启动服务器
 	srv := &http.Server{
@@ -159,6 +169,11 @@ func main() {
 
 	log.Println("Shutting down server...")
 
+	// 停止错误队列（等待队列中的数据刷新完成）
+	log.Println("Stopping error queue...")
+	errorQueue.Stop()
+	time.Sleep(1 * time.Second) // 等待队列刷新完成
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -181,7 +196,7 @@ func setupRoutes(
 	errorReportHandler *handler.ErrorReportHandler,
 	jwtService *jwt.JWT,
 	appKeyRepo *repository.AppKeyRepository,
-	serverMode string,
+	cfg *config.Config,
 ) {
 	// 健康检查 - 包含版本信息
 	r.GET("/health", func(c *gin.Context) {
@@ -198,7 +213,7 @@ func setupRoutes(
 	})
 
 	// Swagger 文档路由（仅在非生产环境启用）
-	if serverMode != gin.ReleaseMode {
+	if cfg.Server.Mode != gin.ReleaseMode {
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
@@ -289,8 +304,13 @@ func setupRoutes(
 			// 报错上报（不需要JWT认证，支持直接上报）
 			// APP端建议使用 /api/v1/app/error/report（签名认证）
 			// 管理端可以使用 /api/v1/admin/error/report（无需认证）
-			admin.POST("/error/report", errorReportHandler.Report)
-			admin.POST("/error/report/batch", errorReportHandler.BatchReport)
+			if cfg.RateLimit.Enabled {
+				admin.POST("/error/report", middleware.RateLimiter(cfg.RateLimit.RequestsPerSecond, cfg.RateLimit.Burst), errorReportHandler.Report)
+				admin.POST("/error/report/batch", middleware.RateLimiter(cfg.RateLimit.RequestsPerSecond, cfg.RateLimit.Burst), errorReportHandler.BatchReport)
+			} else {
+				admin.POST("/error/report", errorReportHandler.Report)
+				admin.POST("/error/report/batch", errorReportHandler.BatchReport)
+			}
 		}
 
 		// ============ APP端 API ============
@@ -310,8 +330,13 @@ func setupRoutes(
 			app.GET("/download/:id", packageHandler.Download)
 
 			// 报错上报
-			app.POST("/error/report", errorReportHandler.Report)
-			app.POST("/error/report/batch", errorReportHandler.BatchReport)
+			if cfg.RateLimit.Enabled {
+				app.POST("/error/report", middleware.RateLimiter(cfg.RateLimit.RequestsPerSecond, cfg.RateLimit.Burst), errorReportHandler.Report)
+				app.POST("/error/report/batch", middleware.RateLimiter(cfg.RateLimit.RequestsPerSecond, cfg.RateLimit.Burst), errorReportHandler.BatchReport)
+			} else {
+				app.POST("/error/report", errorReportHandler.Report)
+				app.POST("/error/report/batch", errorReportHandler.BatchReport)
+			}
 		}
 	}
 }

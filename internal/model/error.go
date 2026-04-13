@@ -15,7 +15,7 @@ type ErrorRecord struct {
 	// 主键ID
 	ID uint `gorm:"primaryKey" json:"id" example:"1"`
 	// 接口请求唯一标识（唯一索引，不允许重复）
-	RequestID string `gorm:"size:128;not null;uniqueIndex" json:"request_id" example:"req-20260330-001"`
+	RequestID string `gorm:"size:128;not null;uniqueIndex:idx_request_id" json:"request_id" example:"req-20260330-001"`
 	// 报错发生时间戳（毫秒）
 	Timestamp int64 `gorm:"not null;index" json:"timestamp" example:"1711737600000"`
 	// 报错模块（自动识别）

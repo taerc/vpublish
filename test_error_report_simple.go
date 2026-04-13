@@ -18,7 +18,7 @@ import (
 
 // 配置信息
 const (
-	BaseURL   = "http://localhost:8080" // 修改为你的服务器地址
+	BaseURL   = "http://172.16.50.41:8080" // 修改为你的服务器地址
 	AppKey    = "JCasbrUdESmxGHuNpL7tUNXhvqFSLt1y"
 	AppSecret = "ecf93cc892d18fe7edafe2355a836bd89a56516655e9487580e59d4e638bed21"
 )

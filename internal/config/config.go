@@ -10,13 +10,15 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Database DatabaseConfig `yaml:"database"`
-	JWT      JWTConfig      `yaml:"jwt"`
-	Storage  StorageConfig  `yaml:"storage"`
-	Log      LogConfig      `yaml:"log"`
-	CORS     CORSConfig     `yaml:"cors"`
-	MCP      MCPConfig      `yaml:"mcp"`
+	Server    ServerConfig    `yaml:"server"`
+	Database  DatabaseConfig  `yaml:"database"`
+	JWT       JWTConfig       `yaml:"jwt"`
+	Storage   StorageConfig   `yaml:"storage"`
+	Log       LogConfig       `yaml:"log"`
+	CORS      CORSConfig      `yaml:"cors"`
+	MCP       MCPConfig       `yaml:"mcp"`
+	ErrorQueue ErrorQueueConfig `yaml:"error_queue"`
+	RateLimit RateLimitConfig `yaml:"rate_limit"`
 }
 
 type ServerConfig struct {
@@ -84,6 +86,21 @@ type MCPHTTPConfig struct {
 type MCPAuthConfig struct {
 	AppKey    string `yaml:"app_key"`    // 应用 Key
 	AppSecret string `yaml:"app_secret"` // 应用 Secret
+}
+
+// ErrorQueueConfig 错误队列配置
+type ErrorQueueConfig struct {
+	Enabled      bool          `yaml:"enabled"`       // 是否启用队列
+	QueueSize    int           `yaml:"queue_size"`    // 队列大小
+	BatchSize    int           `yaml:"batch_size"`    // 批量大小
+	FlushInterval time.Duration `yaml:"flush_interval"` // 刷新间隔
+}
+
+// RateLimitConfig 限流配置
+type RateLimitConfig struct {
+	Enabled          bool `yaml:"enabled"`            // 是否启用限流
+	RequestsPerSecond int  `yaml:"requests_per_second"` // 每秒最多请求数
+	Burst            int  `yaml:"burst"`              // 突发最大请求数
 }
 
 // ResolveConfigPath 解析配置文件路径
@@ -168,6 +185,25 @@ func Load(path string) (*Config, error) {
 	}
 	if cfg.MCP.HTTP.EndpointPath == "" {
 		cfg.MCP.HTTP.EndpointPath = "/mcp"
+	}
+
+	// ErrorQueue defaults
+	if cfg.ErrorQueue.QueueSize == 0 {
+		cfg.ErrorQueue.QueueSize = 10000
+	}
+	if cfg.ErrorQueue.BatchSize == 0 {
+		cfg.ErrorQueue.BatchSize = 100
+	}
+	if cfg.ErrorQueue.FlushInterval == 0 {
+		cfg.ErrorQueue.FlushInterval = 5 * time.Second
+	}
+
+	// RateLimit defaults
+	if cfg.RateLimit.RequestsPerSecond == 0 {
+		cfg.RateLimit.RequestsPerSecond = 50
+	}
+	if cfg.RateLimit.Burst == 0 {
+		cfg.RateLimit.Burst = 100
 	}
 
 	return &cfg, nil
