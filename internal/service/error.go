@@ -38,6 +38,7 @@ type ErrorReportRequest struct {
 	Timestamp     int64                  `json:"timestamp" binding:"required"`
 	Module        string                 `json:"module"`
 	AppType       string                 `json:"app_type"`
+	Path          string                 `json:"path" binding:"required"`
 	Code          string                 `json:"code" binding:"required"`
 	ErrorMessage  string                 `json:"error_message" binding:"required"`
 	ErrorType     string                 `json:"error_type"`
@@ -47,20 +48,12 @@ type ErrorReportRequest struct {
 
 // Report 上报单条报错记录
 func (s *ErrorReportService) Report(ctx context.Context, req *ErrorReportRequest) (*model.ErrorRecord, error) {
-	// 检查 request_id 是否已存在（从数据库查）
-	exists, err := s.recordRepo.ExistsByRequestID(ctx, req.RequestID)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return nil, errors.New("request_id already exists")
-	}
-
 	record := &model.ErrorRecord{
 		RequestID:     req.RequestID,
 		Timestamp:     req.Timestamp,
 		Module:        req.Module,
 		AppType:       req.AppType,
+		Path:          req.Path,
 		Code:          req.Code,
 		ErrorMessage:  req.ErrorMessage,
 		RequestParams: req.RequestParams,
@@ -97,36 +90,13 @@ func (s *ErrorReportService) BatchReport(ctx context.Context, reqs []*ErrorRepor
 	var failedCount int
 	var recordIDs []uint
 
-	// 收集所有需要检查的 request_id
-	requestIDs := make([]string, 0, len(reqs))
 	for _, req := range reqs {
-		requestIDs = append(requestIDs, req.RequestID)
-	}
-
-	// 批量检查哪些 request_id 已存在
-	existingIDs, err := s.recordRepo.GetExistingRequestIDs(ctx, requestIDs)
-	if err != nil {
-		return 0, len(reqs), nil, err
-	}
-
-	// 构建已存在的 request_id 的集合，用于快速查找
-	existingSet := make(map[string]bool)
-	for _, id := range existingIDs {
-		existingSet[id] = true
-	}
-
-	for _, req := range reqs {
-		// 检查 request_id 是否已存在
-		if existingSet[req.RequestID] {
-			failedCount++
-			continue
-		}
-
 		record := &model.ErrorRecord{
 			RequestID:     req.RequestID,
 			Timestamp:     req.Timestamp,
 			Module:        req.Module,
 			AppType:       req.AppType,
+			Path:          req.Path,
 			Code:          req.Code,
 			ErrorMessage:  req.ErrorMessage,
 			RequestParams: req.RequestParams,

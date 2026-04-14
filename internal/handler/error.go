@@ -37,6 +37,8 @@ type ErrorReportRequest struct {
 	RequestParams map[string]interface{} `json:"request_params"`
 	// 设备信息（必填）
 	DeviceInfo map[string]interface{} `json:"device_info" binding:"required"`
+	// 接口路径（必填）
+	Path string `json:"path" binding:"required" example:"/api/v1/app/packages"`
 }
 
 // BatchErrorReportRequest 批量报错上报请求参数
@@ -76,6 +78,7 @@ func (h *ErrorReportHandler) Report(c *gin.Context) {
 		Timestamp:     req.Timestamp,
 		Module:        req.Module,
 		AppType:       appType,
+		Path:          req.Path,
 		Code:          req.Code,
 		ErrorMessage:  req.ErrorMessage,
 		ErrorType:     req.ErrorType,
@@ -125,6 +128,7 @@ func (h *ErrorReportHandler) BatchReport(c *gin.Context) {
 			Timestamp:     r.Timestamp,
 			Module:        r.Module,
 			AppType:       appType,
+			Path:          r.Path,
 			Code:          r.Code,
 			ErrorMessage:  r.ErrorMessage,
 			ErrorType:     r.ErrorType,
