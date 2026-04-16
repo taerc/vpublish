@@ -4,9 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"time"
-
-	"gorm.io/gorm"
 )
 
 // ErrorRecord 报错记录模型
@@ -37,12 +34,12 @@ type ErrorRecord struct {
 	ErrorType string `gorm:"size:32;not null" json:"error_type" example:"system_error"`
 	// 备注
 	Remark string `gorm:"size:500" json:"remark" example:"已处理"`
-	// 创建时间
-	CreatedAt time.Time `gorm:"default:0" json:"created_at" example:"2026-03-30T10:00:00Z"`
-	// 更新时间
-	UpdatedAt time.Time `gorm:"default:0" json:"updated_at" example:"2026-03-30T15:30:00Z"`
-	// 软删除时间
-	DeletedAt gorm.DeletedAt `gorm:"default:0" json:"-"`
+	// 创建时间（毫秒时间戳）
+	CreatedAt int64 `gorm:"not null;default:0" json:"created_at" example:"1711737600000"`
+	// 更新时间（毫秒时间戳）
+	UpdatedAt int64 `gorm:"not null;default:0" json:"updated_at" example:"1711737600000"`
+	// 软删除时间（毫秒时间戳，0表示未删除）
+	DeletedAt int64 `gorm:"not null;default:0;index" json:"-"`
 }
 
 // TableName 表名

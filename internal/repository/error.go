@@ -20,6 +20,9 @@ func NewErrorRecordRepository(db *gorm.DB) *ErrorRecordRepository {
 
 // Create 创建报错记录
 func (r *ErrorRecordRepository) Create(ctx context.Context, record *model.ErrorRecord) error {
+	now := time.Now().UnixMilli()
+	record.CreatedAt = now
+	record.UpdatedAt = now
 	return r.db.WithContext(ctx).Create(record).Error
 }
 
@@ -27,6 +30,11 @@ func (r *ErrorRecordRepository) Create(ctx context.Context, record *model.ErrorR
 func (r *ErrorRecordRepository) CreateBatch(ctx context.Context, records []*model.ErrorRecord) error {
 	if len(records) == 0 {
 		return nil
+	}
+	now := time.Now().UnixMilli()
+	for _, record := range records {
+		record.CreatedAt = now
+		record.UpdatedAt = now
 	}
 	return r.db.WithContext(ctx).CreateInBatches(records, 100).Error
 }
@@ -137,7 +145,7 @@ func (r *ErrorRecordRepository) List(ctx context.Context, query *ErrorRecordList
 	// 统计总数
 	db.Count(&total)
 
-	// 分页查询
+	// 分页查询（按 created_at 降序排序）
 	offset := (query.Page - 1) * query.PageSize
 	err := db.Offset(offset).Limit(query.PageSize).Order("created_at DESC").Find(&records).Error
 	return records, total, err
@@ -182,7 +190,7 @@ func (r *ErrorRecordRepository) GetTrend(ctx context.Context, startDate, endDate
 		Count int
 	}
 
-	// 将日期转换为时间戳（毫秒），避免使用函数以利用索引
+	// 将日期转换为时间戳（毫秒）
 	startTime, err := dateToTimestamp(startDate, "00:00:00")
 	if err != nil {
 		return nil, err
