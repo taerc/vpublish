@@ -287,7 +287,7 @@ async function loadData() {
   try {
     const params: ErrorQueryParams = {
       page: pagination.page,
-      size: pagination.size,
+      page_size: pagination.size,
     }
 
     if (dateRange.value) {

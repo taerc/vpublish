@@ -55,7 +55,7 @@ export interface BatchErrorReportRequest {
 // 报错查询参数
 export interface ErrorQueryParams {
   page?: number
-  size?: number
+  page_size?: number
   start_time?: number
   end_time?: number
   app_type?: string
