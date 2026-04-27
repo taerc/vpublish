@@ -88,7 +88,7 @@ export const packageApi = {
   },
 
   // 版本列表
-  listVersions(packageId: number, params?: { page?: number; page_size?: number }): Promise<ApiResponse<PageResponse<Version>>> {
+  listVersions(packageId: number, params?: { page?: number; page_size?: number; feature_type?: string }): Promise<ApiResponse<PageResponse<Version>>> {
     return get(`/admin/packages/${packageId}/versions`, { params })
   },
 

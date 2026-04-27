@@ -316,8 +316,8 @@ async function handleUpload() {
   }
 }
 
-const featureTypeTagType = (type: string): string => {
-  const map: Record<string, string> = { debug: 'info', release: 'success', demo: 'warning' }
+const featureTypeTagType = (type: string): 'info' | 'success' | 'warning' => {
+  const map: Record<string, 'info' | 'success' | 'warning'> = { debug: 'info', release: 'success', demo: 'warning' }
   return map[type] || 'info'
 }
 
