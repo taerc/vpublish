@@ -122,6 +122,14 @@
         <el-form-item label="更新日志">
           <el-input v-model="form.changelog" type="textarea" :rows="3" placeholder="请输入更新日志" />
         </el-form-item>
+        <el-form-item label="功能类型">
+          <el-select v-model="form.feature_type" style="width: 100%;">
+            <el-option label="调试版本" value="debug" />
+            <el-option label="正式版本" value="release" />
+            <el-option label="演示版本" value="demo" />
+          </el-select>
+          <span style="margin-left: 10px; color: #999; font-size: 12px;">debug=调试，release=正式，demo=演示</span>
+        </el-form-item>
         <el-form-item label="强制升级">
           <el-switch v-model="form.force_upgrade" />
           <span style="margin-left: 10px; color: #999; font-size: 12px;">开启后，客户端必须升级到此版本</span>
@@ -191,6 +199,7 @@ const form = reactive({
   version: '',
   description: '',
   changelog: '',
+  feature_type: 'release',
   force_upgrade: false,
   file: null as File | null,
 })
@@ -262,6 +271,7 @@ function handleAdd() {
   form.version = ''
   form.description = ''
   form.changelog = ''
+  form.feature_type = 'release'
   form.force_upgrade = false
   form.file = null
   fileList.value = []
@@ -313,6 +323,7 @@ async function handleSubmit() {
     formData.append('description', form.description)
     formData.append('changelog', form.changelog)
     formData.append('force_upgrade', String(form.force_upgrade))
+    formData.append('feature_type', form.feature_type)
 
     await packageApi.create(formData)
     ElMessage.success('创建成功')

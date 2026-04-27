@@ -74,6 +74,7 @@ type CreatePackageWithVersionRequest struct {
 	Description  string                `json:"description"`
 	Changelog    string                `json:"changelog"`
 	ForceUpgrade bool                  `json:"force_upgrade"` // 是否强制升级
+	FeatureType  string                `json:"feature_type"`
 	File         *multipart.FileHeader `json:"-"`
 }
 
@@ -90,6 +91,7 @@ type CreateVersionRequest struct {
 	MinVersion   string `json:"min_version"`
 	ForceUpgrade bool   `json:"force_upgrade"`
 	IsStable     bool   `json:"is_stable"`
+	FeatureType  string `json:"feature_type"`
 }
 
 // CreateWithVersion 创建软件包并上传第一个版本
@@ -109,8 +111,12 @@ func (s *PackageService) CreateWithVersion(
 
 	// 检查同一类别下是否已存在同名软件包
 	existingPkg, err := s.packageRepo.GetByCategoryAndName(ctx, req.CategoryID, packageName)
+	featureType := req.FeatureType
+	if featureType == "" {
+		featureType = model.FeatureTypeRelease
+	}
 	if err == nil {
-		if exists, _ := s.versionRepo.ExistsByPackageAndVersion(ctx, existingPkg.ID, req.Version); exists {
+		if exists, _ := s.versionRepo.ExistsByPackageAndVersion(ctx, existingPkg.ID, req.Version, featureType); exists {
 			return nil, nil, ErrVersionAlreadyExists
 		}
 		return nil, nil, errors.New("软件包已存在，请使用上传新版本接口")
@@ -161,6 +167,7 @@ func (s *PackageService) CreateWithVersion(
 		ForceUpgrade: req.ForceUpgrade,
 		IsLatest:     true,
 		IsStable:     true,
+		FeatureType:  featureType,
 		CreatedBy:    userID,
 		PublishedAt:  &now,
 	}
@@ -269,8 +276,17 @@ func (s *PackageService) UploadVersion(
 		return nil, ErrPackageNotFound
 	}
 
+	// 默认功能类型
+	featureType := req.FeatureType
+	if featureType == "" {
+		featureType = model.FeatureTypeRelease
+	}
+	if !model.IsValidFeatureType(featureType) {
+		return nil, fmt.Errorf("invalid feature_type: %s", featureType)
+	}
+
 	// 检查版本是否已存在
-	if exists, _ := s.versionRepo.ExistsByPackageAndVersion(ctx, packageID, req.Version); exists {
+	if exists, _ := s.versionRepo.ExistsByPackageAndVersion(ctx, packageID, req.Version, featureType); exists {
 		return nil, ErrVersionAlreadyExists
 	}
 
@@ -286,7 +302,7 @@ func (s *PackageService) UploadVersion(
 	}
 
 	// 检查新版本号必须大于已有最大版本号
-	maxVersionCode, err := s.versionRepo.GetMaxVersionCode(ctx, packageID)
+	maxVersionCode, err := s.versionRepo.GetMaxVersionCode(ctx, packageID, featureType)
 	if err != nil {
 		return nil, fmt.Errorf("get max version: %w", err)
 	}
@@ -302,7 +318,7 @@ func (s *PackageService) UploadVersion(
 	}
 
 	// 清除之前的最新版本标记
-	s.versionRepo.ClearLatestFlag(ctx, packageID)
+	s.versionRepo.ClearLatestFlag(ctx, packageID, featureType)
 
 	now := time.Now()
 	version := &model.Version{
@@ -319,6 +335,7 @@ func (s *PackageService) UploadVersion(
 		ForceUpgrade: req.ForceUpgrade,
 		IsLatest:     true,
 		IsStable:     req.IsStable,
+		FeatureType:  featureType,
 		CreatedBy:    userID,
 		PublishedAt:  &now,
 	}
@@ -333,13 +350,13 @@ func (s *PackageService) UploadVersion(
 }
 
 // GetLatestByCategoryCode 根据类别代码获取最新版本
-func (s *PackageService) GetLatestByCategoryCode(ctx context.Context, categoryCode string) (*model.Version, error) {
-	return s.versionRepo.GetLatestByCategoryCode(ctx, categoryCode)
+func (s *PackageService) GetLatestByCategoryCode(ctx context.Context, categoryCode, featureType string) (*model.Version, error) {
+	return s.versionRepo.GetLatestByCategoryCode(ctx, categoryCode, featureType)
 }
 
 // GetVersionsByCategoryCode 根据类别代码获取最新5个版本列表（含下载链接）
-func (s *PackageService) GetVersionsByCategoryCode(ctx context.Context, categoryCode string, appSecret string) ([]map[string]interface{}, error) {
-	versions, err := s.versionRepo.GetLatestVersionsByCategoryCode(ctx, categoryCode, 5)
+func (s *PackageService) GetVersionsByCategoryCode(ctx context.Context, categoryCode, featureType string, appSecret string) ([]map[string]interface{}, error) {
+	versions, err := s.versionRepo.GetLatestVersionsByCategoryCode(ctx, categoryCode, 5, featureType)
 	if err != nil {
 		return nil, err
 	}
@@ -395,8 +412,8 @@ func (s *PackageService) GetVersionByID(ctx context.Context, id uint) (*model.Ve
 }
 
 // ListVersions 列出软件包的所有版本
-func (s *PackageService) ListVersions(ctx context.Context, packageID uint, page, pageSize int) ([]model.Version, int64, error) {
-	return s.versionRepo.ListByPackage(ctx, packageID, page, pageSize)
+func (s *PackageService) ListVersions(ctx context.Context, packageID uint, page, pageSize int, featureType string) ([]model.Version, int64, error) {
+	return s.versionRepo.ListByPackage(ctx, packageID, page, pageSize, featureType)
 }
 
 // DeleteVersion 删除版本

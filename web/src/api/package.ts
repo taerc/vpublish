@@ -35,6 +35,7 @@ export interface Version {
   is_latest: boolean
   is_stable: boolean
   download_count: number
+  feature_type: string // 功能类型：debug, release, demo
   published_at: string
   created_at: string
 }

@@ -2547,6 +2547,18 @@ const docTemplate = `{
                         "description": "是否强制升级",
                         "name": "force_upgrade",
                         "in": "formData"
+                    },
+                    {
+                        "enum": [
+                            "debug",
+                            "release",
+                            "demo"
+                        ],
+                        "type": "string",
+                        "default": "release",
+                        "description": "功能类型 (debug/release/demo)",
+                        "name": "feature_type",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -2838,6 +2850,17 @@ const docTemplate = `{
                         "description": "每页数量",
                         "name": "page_size",
                         "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "debug",
+                            "release",
+                            "demo"
+                        ],
+                        "type": "string",
+                        "description": "功能类型 (debug/release/demo)",
+                        "name": "feature_type",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2968,6 +2991,18 @@ const docTemplate = `{
                         "default": true,
                         "description": "是否稳定版",
                         "name": "is_stable",
+                        "in": "formData"
+                    },
+                    {
+                        "enum": [
+                            "debug",
+                            "release",
+                            "demo"
+                        ],
+                        "type": "string",
+                        "default": "release",
+                        "description": "功能类型 (debug/release/demo)",
+                        "name": "feature_type",
                         "in": "formData"
                     }
                 ],
@@ -4147,6 +4182,18 @@ const docTemplate = `{
                         "name": "code",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "debug",
+                            "release",
+                            "demo"
+                        ],
+                        "type": "string",
+                        "default": "release",
+                        "description": "功能类型 (debug/release/demo)",
+                        "name": "type",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -4170,7 +4217,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "类别代码不能为空",
+                        "description": "类别代码不能为空或功能类型无效",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -4228,6 +4275,18 @@ const docTemplate = `{
                         "name": "code",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "debug",
+                            "release",
+                            "demo"
+                        ],
+                        "type": "string",
+                        "default": "release",
+                        "description": "功能类型 (debug/release/demo)",
+                        "name": "type",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -4254,7 +4313,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "类别代码不能为空",
+                        "description": "类别代码不能为空或功能类型无效",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -5189,6 +5248,11 @@ const docTemplate = `{
                     "description": "统计\n下载次数",
                     "type": "integer",
                     "example": 1523
+                },
+                "feature_type": {
+                    "description": "功能类型 (debug/release/demo)",
+                    "type": "string",
+                    "example": "release"
                 },
                 "file_hash": {
                     "description": "文件SHA256哈希",

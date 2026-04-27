@@ -44,6 +44,8 @@ type Version struct {
 	IsLatest bool `gorm:"default:false" json:"is_latest" example:"true"`
 	// 是否稳定版
 	IsStable bool `gorm:"default:true" json:"is_stable" example:"true"`
+	// 功能类型 (debug/release/demo)
+	FeatureType string `gorm:"size:20;not null;default:release;index" json:"feature_type" example:"release"`
 
 	// 统计
 	// 下载次数
@@ -68,6 +70,18 @@ type Version struct {
 
 func (Version) TableName() string {
 	return "versions"
+}
+
+// FeatureType 常量定义
+const (
+	FeatureTypeDebug   = "debug"
+	FeatureTypeRelease = "release"
+	FeatureTypeDemo    = "demo"
+)
+
+// IsValidFeatureType 校验功能类型是否合法
+func IsValidFeatureType(ft string) bool {
+	return ft == FeatureTypeDebug || ft == FeatureTypeRelease || ft == FeatureTypeDemo
 }
 
 // GetDownloadURL 生成下载URL

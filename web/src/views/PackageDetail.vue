@@ -33,6 +33,11 @@
     <div class="page-card" style="margin-top: 20px;">
       <div class="card-header">
         <span class="card-title">版本列表</span>
+        <el-select v-model="filterFeatureType" placeholder="筛选类型" clearable style="width: 150px" @change="loadVersions">
+          <el-option label="调试版本" value="debug" />
+          <el-option label="正式版本" value="release" />
+          <el-option label="演示版本" value="demo" />
+        </el-select>
       </div>
       <el-table :data="versions" v-loading="loading" stripe>
         <el-table-column prop="version" label="版本号" width="120">
@@ -58,6 +63,13 @@
           <template #default="{ row }">
             <el-tag :type="row.is_stable ? 'success' : 'warning'" size="small">
               {{ row.is_stable ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="feature_type" label="功能类型" width="100">
+          <template #default="{ row }">
+            <el-tag :type="featureTypeTagType(row.feature_type)" size="small">
+              {{ featureTypeLabel(row.feature_type) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -125,6 +137,13 @@
         <el-form-item label="稳定版">
           <el-switch v-model="uploadForm.is_stable" />
         </el-form-item>
+        <el-form-item label="功能类型">
+          <el-select v-model="uploadForm.feature_type" placeholder="请选择功能类型" style="width: 100%">
+            <el-option label="调试版本 (debug)" value="debug" />
+            <el-option label="正式版本 (release)" value="release" />
+            <el-option label="演示版本 (demo)" value="demo" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="uploadDialogVisible = false">取消</el-button>
@@ -171,6 +190,8 @@ const currentVersion = ref<Version>()
 const uploadFormRef = ref<FormInstance>()
 const uploadRef = ref()
 
+const filterFeatureType = ref<string>('')
+
 const pagination = reactive({
   page: 1,
   pageSize: 20,
@@ -185,6 +206,7 @@ const uploadForm = reactive({
   min_version: '',
   force_upgrade: false,
   is_stable: true,
+  feature_type: 'release',
 })
 
 const uploadRules: FormRules = {
@@ -214,6 +236,7 @@ async function loadVersions() {
     const res = await packageApi.listVersions(packageId.value, {
       page: pagination.page,
       page_size: pagination.pageSize,
+      feature_type: filterFeatureType.value || undefined,
     })
     versions.value = res.data.list
     pagination.total = res.data.total
@@ -280,6 +303,7 @@ async function handleUpload() {
     formData.append('min_version', uploadForm.min_version)
     formData.append('force_upgrade', String(uploadForm.force_upgrade))
     formData.append('is_stable', String(uploadForm.is_stable))
+    formData.append('feature_type', uploadForm.feature_type)
 
     await packageApi.uploadVersion(packageId.value, formData)
     ElMessage.success('发布成功')
@@ -290,5 +314,15 @@ async function handleUpload() {
   } finally {
     uploadLoading.value = false
   }
+}
+
+const featureTypeTagType = (type: string): string => {
+  const map: Record<string, string> = { debug: 'info', release: 'success', demo: 'warning' }
+  return map[type] || 'info'
+}
+
+const featureTypeLabel = (type: string): string => {
+  const map: Record<string, string> = { debug: '调试', release: '正式', demo: '演示' }
+  return map[type] || type || '-'
 }
 </script>

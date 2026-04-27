@@ -45,11 +45,14 @@ func (r *VersionRepository) GetByPackageAndVersion(ctx context.Context, packageI
 	return &v, nil
 }
 
-func (r *VersionRepository) ListByPackage(ctx context.Context, packageID uint, page, pageSize int) ([]model.Version, int64, error) {
+func (r *VersionRepository) ListByPackage(ctx context.Context, packageID uint, page, pageSize int, featureType string) ([]model.Version, int64, error) {
 	var versions []model.Version
 	var total int64
 
 	db := r.db.WithContext(ctx).Model(&model.Version{}).Where("package_id = ?", packageID)
+	if featureType != "" {
+		db = db.Where("feature_type = ?", featureType)
+	}
 	db.Count(&total)
 
 	offset := (page - 1) * pageSize
@@ -68,12 +71,12 @@ func (r *VersionRepository) GetLatestByPackage(ctx context.Context, packageID ui
 	return &version, nil
 }
 
-func (r *VersionRepository) GetLatestByCategoryCode(ctx context.Context, categoryCode string) (*model.Version, error) {
+func (r *VersionRepository) GetLatestByCategoryCode(ctx context.Context, categoryCode, featureType string) (*model.Version, error) {
 	var version model.Version
 	err := r.db.WithContext(ctx).
 		Joins("JOIN packages ON packages.id = versions.package_id").
 		Joins("JOIN categories ON categories.id = packages.category_id").
-		Where("categories.code = ? AND packages.is_active = ?", categoryCode, true).
+		Where("categories.code = ? AND packages.is_active = ? AND versions.feature_type = ?", categoryCode, true, featureType).
 		Order("versions.version_code DESC").
 		First(&version).Error
 	if err != nil {
@@ -93,12 +96,12 @@ func (r *VersionRepository) GetLatestByCategoryCode(ctx context.Context, categor
 	return &version, nil
 }
 
-func (r *VersionRepository) GetLatestVersionsByCategoryCode(ctx context.Context, categoryCode string, limit int) ([]model.Version, error) {
+func (r *VersionRepository) GetLatestVersionsByCategoryCode(ctx context.Context, categoryCode string, limit int, featureType string) ([]model.Version, error) {
 	var versions []model.Version
 	err := r.db.WithContext(ctx).
 		Joins("JOIN packages ON packages.id = versions.package_id").
 		Joins("JOIN categories ON categories.id = packages.category_id").
-		Where("categories.code = ? AND packages.is_active = ? AND versions.is_stable = ?", categoryCode, 1, 1).
+		Where("categories.code = ? AND packages.is_active = ? AND versions.is_stable = ? AND versions.feature_type = ?", categoryCode, 1, 1, featureType).
 		Order("versions.version_code DESC").
 		Limit(limit).
 		Find(&versions).Error
@@ -120,10 +123,10 @@ func (r *VersionRepository) GetLatestVersionsByCategoryCode(ctx context.Context,
 	return versions, nil
 }
 
-func (r *VersionRepository) ClearLatestFlag(ctx context.Context, packageID uint) error {
+func (r *VersionRepository) ClearLatestFlag(ctx context.Context, packageID uint, featureType string) error {
 	return r.db.WithContext(ctx).
 		Model(&model.Version{}).
-		Where("package_id = ?", packageID).
+		Where("package_id = ? AND feature_type = ?", packageID, featureType).
 		Update("is_latest", false).Error
 }
 
@@ -141,19 +144,19 @@ func (r *VersionRepository) IncrementDownloadCount(ctx context.Context, id uint)
 		UpdateColumn("download_count", gorm.Expr("download_count + 1")).Error
 }
 
-func (r *VersionRepository) ExistsByPackageAndVersion(ctx context.Context, packageID uint, version string) (bool, error) {
+func (r *VersionRepository) ExistsByPackageAndVersion(ctx context.Context, packageID uint, version, featureType string) (bool, error) {
 	var count int64
 	err := r.db.WithContext(ctx).Model(&model.Version{}).
-		Where("package_id = ? AND version = ?", packageID, version).
+		Where("package_id = ? AND version = ? AND feature_type = ?", packageID, version, featureType).
 		Count(&count).Error
 	return count > 0, err
 }
 
-func (r *VersionRepository) GetMaxVersionCode(ctx context.Context, packageID uint) (int, error) {
+func (r *VersionRepository) GetMaxVersionCode(ctx context.Context, packageID uint, featureType string) (int, error) {
 	var maxCode int
 	err := r.db.WithContext(ctx).
 		Model(&model.Version{}).
-		Where("package_id = ?", packageID).
+		Where("package_id = ? AND feature_type = ?", packageID, featureType).
 		Select("COALESCE(MAX(version_code), 0)").
 		Scan(&maxCode).Error
 	return maxCode, err

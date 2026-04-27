@@ -579,7 +579,7 @@ func TestPackageService_ListVersions(t *testing.T) {
 	req2 := &CreateVersionRequest{Version: "2.0.0", IsStable: true}
 	_, _ = svc.UploadVersion(ctx, pkg.ID, user.ID, fileHeader2, req2)
 
-	versions, total, err := svc.ListVersions(ctx, pkg.ID, 1, 10)
+	versions, total, err := svc.ListVersions(ctx, pkg.ID, 1, 10, "")
 	if err != nil {
 		t.Fatalf("failed to list versions: %v", err)
 	}
@@ -904,7 +904,7 @@ func TestPackageService_GetVersionsByCategoryCode(t *testing.T) {
 	}
 
 	// Get versions by category code with download URLs
-	versions, err := svc.GetVersionsByCategoryCode(ctx, category.Code, "test-secret")
+	versions, err := svc.GetVersionsByCategoryCode(ctx, category.Code, model.FeatureTypeRelease, "test-secret")
 	if err != nil {
 		t.Fatalf("failed to get versions by category code: %v", err)
 	}
@@ -941,7 +941,7 @@ func TestPackageService_GetVersionsByCategoryCode_EmptyCategory(t *testing.T) {
 	svc := NewPackageService(packageRepo, versionRepo, categoryRepo, ls, "http://localhost:8080", "")
 	ctx := context.Background()
 
-	versions, err := svc.GetVersionsByCategoryCode(ctx, "NONEXISTENT_CODE", "test-secret")
+	versions, err := svc.GetVersionsByCategoryCode(ctx, "NONEXISTENT_CODE", model.FeatureTypeRelease, "test-secret")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

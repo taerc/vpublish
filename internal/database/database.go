@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/taerc/vpublish/internal/config"
@@ -32,7 +33,7 @@ func New(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	return db.AutoMigrate(
+	if err := db.AutoMigrate(
 		&model.User{},
 		&model.AppKey{},
 		&model.Category{},
@@ -42,5 +43,21 @@ func Migrate(db *gorm.DB) error {
 		&model.DownloadStat{},
 		&model.MCPCredential{},
 		&model.ErrorRecord{},
-	)
+	); err != nil {
+		return err
+	}
+
+	// feature_type 迁移：设置已有记录的默认值
+	// GORM AutoMigrate 只对新行设置默认值，需手动更新已有数据
+	if err := db.Exec("UPDATE versions SET feature_type = 'release' WHERE feature_type IS NULL OR feature_type = ''").Error; err != nil {
+		log.Printf("warning: migrate feature_type default value: %v", err)
+		// 不阻断迁移，feature_type 可能已经存在
+	}
+
+	// 设置列默认值和 NOT NULL 约束
+	if err := db.Exec("ALTER TABLE versions MODIFY COLUMN feature_type VARCHAR(20) NOT NULL DEFAULT 'release'").Error; err != nil {
+		log.Printf("warning: modify feature_type column definition: %v", err)
+	}
+
+	return nil
 }

@@ -102,6 +102,7 @@ func (h *PackageHandler) Get(c *gin.Context) {
 // @Param description formData string false "软件包描述"
 // @Param changelog formData string false "更新日志"
 // @Param force_upgrade formData bool false "是否强制升级" default(false)
+// @Param feature_type formData string false "功能类型 (debug/release/demo)" Enums(debug,release,demo) default(release)
 // @Success 200 {object} response.Response{data=map[string]interface{}} "创建成功，返回软件包和版本信息"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 401 {object} response.Response "未认证"
@@ -134,10 +135,16 @@ func (h *PackageHandler) Create(c *gin.Context) {
 	req.Description = c.PostForm("description")
 	req.Changelog = c.PostForm("changelog")
 	req.ForceUpgrade = c.PostForm("force_upgrade") == "true"
+	req.FeatureType = c.PostForm("feature_type")
 	req.File = file
 
 	if req.Version == "" {
 		response.BadRequest(c, "version is required")
+		return
+	}
+
+	if req.FeatureType != "" && !model.IsValidFeatureType(req.FeatureType) {
+		response.BadRequest(c, "invalid feature_type")
 		return
 	}
 
@@ -227,6 +234,7 @@ func (h *PackageHandler) Delete(c *gin.Context) {
 // @Param id path int true "软件包ID" minimum(1)
 // @Param page query int false "页码" minimum(1) default(1)
 // @Param page_size query int false "每页数量" minimum(1) maximum(100) default(20)
+// @Param feature_type query string false "功能类型 (debug/release/demo)" Enums(debug,release,demo)
 // @Success 200 {object} response.Response{data=response.PageData{list=[]model.Version}} "版本列表"
 // @Failure 400 {object} response.Response "无效的软件包ID"
 // @Failure 401 {object} response.Response "未认证"
@@ -242,8 +250,9 @@ func (h *PackageHandler) ListVersions(c *gin.Context) {
 
 	page := middleware.ParseIntQuery(c, "page", 1)
 	pageSize := middleware.ParseIntQuery(c, "page_size", 20)
+	featureType := c.Query("feature_type")
 
-	versions, total, err := h.packageService.ListVersions(c.Request.Context(), uint(packageID), page, pageSize)
+	versions, total, err := h.packageService.ListVersions(c.Request.Context(), uint(packageID), page, pageSize, featureType)
 	if err != nil {
 		response.InternalError(c, "failed to get versions")
 		return
@@ -266,6 +275,7 @@ func (h *PackageHandler) ListVersions(c *gin.Context) {
 // @Param min_version formData string false "最低兼容版本" example("1.0.0")
 // @Param force_upgrade formData bool false "是否强制升级" default(false)
 // @Param is_stable formData bool false "是否稳定版" default(true)
+// @Param feature_type formData string false "功能类型 (debug/release/demo)" Enums(debug,release,demo) default(release)
 // @Success 200 {object} response.Response{data=model.Version} "上传成功"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 401 {object} response.Response "未认证"
@@ -295,6 +305,7 @@ func (h *PackageHandler) UploadVersion(c *gin.Context) {
 	req.MinVersion = c.PostForm("min_version")
 	req.ForceUpgrade = c.PostForm("force_upgrade") == "true"
 	req.IsStable = c.PostForm("is_stable") != "false" // 默认为稳定版
+	req.FeatureType = c.PostForm("feature_type")
 
 	if req.Version == "" {
 		response.BadRequest(c, "version is required")
@@ -346,8 +357,9 @@ func (h *PackageHandler) DeleteVersion(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param code path string true "类别代码" example("TYPE_WU_REN_JI")
+// @Param type query string false "功能类型 (debug/release/demo)" Enums(debug,release,demo) default(release)
 // @Success 200 {object} response.Response{data=map[string]interface{}} "最新版本信息"
-// @Failure 400 {object} response.Response "类别代码不能为空"
+// @Failure 400 {object} response.Response "类别代码不能为空或功能类型无效"
 // @Failure 401 {object} response.Response "认证失败"
 // @Failure 404 {object} response.Response "该类别下没有找到版本"
 // @Security SignatureAuth []
@@ -361,7 +373,13 @@ func (h *PackageHandler) GetLatestByCategory(c *gin.Context) {
 		return
 	}
 
-	version, err := h.packageService.GetLatestByCategoryCode(c.Request.Context(), code)
+	featureType := c.DefaultQuery("type", model.FeatureTypeRelease)
+	if !model.IsValidFeatureType(featureType) {
+		response.BadRequest(c, "invalid feature_type")
+		return
+	}
+
+	version, err := h.packageService.GetLatestByCategoryCode(c.Request.Context(), code, featureType)
 	if err != nil {
 		response.NotFound(c, "no version found for this category")
 		return
@@ -420,8 +438,9 @@ func (h *PackageHandler) GetLatestByCategory(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param code path string true "类别代码" example("TYPE_WU_REN_JI")
+// @Param type query string false "功能类型 (debug/release/demo)" Enums(debug,release,demo) default(release)
 // @Success 200 {object} response.Response{data=[]map[string]interface{}} "版本列表信息"
-// @Failure 400 {object} response.Response "类别代码不能为空"
+// @Failure 400 {object} response.Response "类别代码不能为空或功能类型无效"
 // @Failure 401 {object} response.Response "认证失败"
 // @Failure 404 {object} response.Response "该类别下没有找到版本"
 // @Security SignatureAuth []
@@ -435,10 +454,16 @@ func (h *PackageHandler) GetVersionsByCategory(c *gin.Context) {
 		return
 	}
 
+	featureType := c.DefaultQuery("type", model.FeatureTypeRelease)
+	if !model.IsValidFeatureType(featureType) {
+		response.BadRequest(c, "invalid feature_type")
+		return
+	}
+
 	// 获取 AppKey 信息用于生成签名链接
 	appKey := middleware.GetAppKey(c)
 
-	versions, err := h.packageService.GetVersionsByCategoryCode(c.Request.Context(), code, appKey.AppSecret)
+	versions, err := h.packageService.GetVersionsByCategoryCode(c.Request.Context(), code, featureType, appKey.AppSecret)
 	if err != nil {
 		response.NotFound(c, "no versions found for this category")
 		return

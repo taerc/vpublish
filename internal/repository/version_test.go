@@ -167,7 +167,7 @@ func TestVersionRepository_ExistsByPackageAndVersion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			exists, err := repo.ExistsByPackageAndVersion(ctx, tt.packageID, tt.version)
+			exists, err := repo.ExistsByPackageAndVersion(ctx, tt.packageID, tt.version, model.FeatureTypeRelease)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -235,7 +235,7 @@ func TestVersionRepository_GetMaxVersionCode(t *testing.T) {
 		db.Create(v)
 	}
 
-	maxCode, err := repo.GetMaxVersionCode(ctx, pkg.ID)
+	maxCode, err := repo.GetMaxVersionCode(ctx, pkg.ID, model.FeatureTypeRelease)
 	if err != nil {
 		t.Fatalf("failed to get max version code: %v", err)
 	}
@@ -245,7 +245,7 @@ func TestVersionRepository_GetMaxVersionCode(t *testing.T) {
 	}
 
 	t.Run("empty package returns 0", func(t *testing.T) {
-		maxCode, err := repo.GetMaxVersionCode(ctx, 999)
+		maxCode, err := repo.GetMaxVersionCode(ctx, 999, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -320,7 +320,7 @@ func TestVersionRepository_ListByPackage(t *testing.T) {
 		db.Create(version)
 	}
 
-	versions, total, err := repo.ListByPackage(ctx, pkg.ID, 1, 10)
+	versions, total, err := repo.ListByPackage(ctx, pkg.ID, 1, 10, "")
 	if err != nil {
 		t.Fatalf("failed to list versions: %v", err)
 	}
@@ -373,7 +373,7 @@ func TestVersionRepository_ClearLatestFlag(t *testing.T) {
 	db.Create(v1)
 	db.Create(v2)
 
-	err := repo.ClearLatestFlag(ctx, pkg.ID)
+	err := repo.ClearLatestFlag(ctx, pkg.ID, model.FeatureTypeRelease)
 	if err != nil {
 		t.Fatalf("failed to clear latest flag: %v", err)
 	}
@@ -497,7 +497,7 @@ func TestVersionRepository_GetLatestVersionsByCategoryCode(t *testing.T) {
 			db.Create(version)
 		}
 
-		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 3)
+		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 3, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("failed to get versions: %v", err)
 		}
@@ -569,7 +569,7 @@ func TestVersionRepository_GetLatestVersionsByCategoryCode(t *testing.T) {
 		db.Create(v2)
 		db.Create(v3)
 
-		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10)
+		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("failed to get versions: %v", err)
 		}
@@ -590,7 +590,7 @@ func TestVersionRepository_GetLatestVersionsByCategoryCode(t *testing.T) {
 	})
 
 	t.Run("returns empty slice when category not found", func(t *testing.T) {
-		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, "NONEXISTENT_CAT", 10)
+		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, "NONEXISTENT_CAT", 10, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -663,7 +663,7 @@ func TestVersionRepository_GetLatestVersionsByCategoryCode(t *testing.T) {
 		db.Create(v1)
 		db.Create(v2)
 
-		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10)
+		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("failed to get versions: %v", err)
 		}
@@ -724,7 +724,7 @@ func TestVersionRepository_GetLatestVersionsByCategoryCode(t *testing.T) {
 			"published_at":  now,
 		})
 
-		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10)
+		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("failed to get versions: %v", err)
 		}
@@ -772,7 +772,7 @@ func TestVersionRepository_GetLatestVersionsByCategoryCode(t *testing.T) {
 			db.Create(version)
 		}
 
-		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10)
+		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("failed to get versions: %v", err)
 		}
@@ -814,7 +814,7 @@ func TestVersionRepository_GetLatestVersionsByCategoryCode(t *testing.T) {
 		}
 		db.Create(version)
 
-		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10)
+		versions, err := repo.GetLatestVersionsByCategoryCode(ctx, category.Code, 10, model.FeatureTypeRelease)
 		if err != nil {
 			t.Fatalf("failed to get versions: %v", err)
 		}

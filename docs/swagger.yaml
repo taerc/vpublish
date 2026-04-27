@@ -645,6 +645,10 @@ definitions:
           下载次数
         example: 1523
         type: integer
+      feature_type:
+        description: 功能类型 (debug/release/demo)
+        example: release
+        type: string
       file_hash:
         description: 文件SHA256哈希
         example: a1b2c3d4e5f6...
@@ -2369,6 +2373,15 @@ paths:
         in: formData
         name: force_upgrade
         type: boolean
+      - default: release
+        description: 功能类型 (debug/release/demo)
+        enum:
+        - debug
+        - release
+        - demo
+        in: formData
+        name: feature_type
+        type: string
       produces:
       - application/json
       responses:
@@ -2550,6 +2563,14 @@ paths:
         minimum: 1
         name: page_size
         type: integer
+      - description: 功能类型 (debug/release/demo)
+        enum:
+        - debug
+        - release
+        - demo
+        in: query
+        name: feature_type
+        type: string
       produces:
       - application/json
       responses:
@@ -2632,6 +2653,15 @@ paths:
         in: formData
         name: is_stable
         type: boolean
+      - default: release
+        description: 功能类型 (debug/release/demo)
+        enum:
+        - debug
+        - release
+        - demo
+        in: formData
+        name: feature_type
+        type: string
       produces:
       - application/json
       responses:
@@ -3347,6 +3377,15 @@ paths:
         name: code
         required: true
         type: string
+      - default: release
+        description: 功能类型 (debug/release/demo)
+        enum:
+        - debug
+        - release
+        - demo
+        in: query
+        name: type
+        type: string
       produces:
       - application/json
       responses:
@@ -3361,7 +3400,7 @@ paths:
                   type: object
               type: object
         "400":
-          description: 类别代码不能为空
+          description: 类别代码不能为空或功能类型无效
           schema:
             $ref: '#/definitions/response.Response'
         "401":
@@ -3394,6 +3433,15 @@ paths:
         name: code
         required: true
         type: string
+      - default: release
+        description: 功能类型 (debug/release/demo)
+        enum:
+        - debug
+        - release
+        - demo
+        in: query
+        name: type
+        type: string
       produces:
       - application/json
       responses:
@@ -3410,7 +3458,7 @@ paths:
                   type: array
               type: object
         "400":
-          description: 类别代码不能为空
+          description: 类别代码不能为空或功能类型无效
           schema:
             $ref: '#/definitions/response.Response'
         "401":

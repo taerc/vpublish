@@ -111,7 +111,7 @@ func registerTools(
 			return mcp.NewToolResultError("package_id is required"), nil
 		}
 
-		versions, _, err := versionRepo.ListByPackage(ctx, uint(packageID), 1, 100)
+		versions, _, err := versionRepo.ListByPackage(ctx, uint(packageID), 1, 100, "release")
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
@@ -131,7 +131,7 @@ func registerTools(
 			return mcp.NewToolResultError("category_code is required"), nil
 		}
 
-		version, err := versionRepo.GetLatestByCategoryCode(ctx, categoryCode)
+		version, err := versionRepo.GetLatestByCategoryCode(ctx, categoryCode, "release")
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
