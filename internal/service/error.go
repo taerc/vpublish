@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/taerc/vpublish/internal/model"
+	"github.com/taerc/vpublish/internal/queue"
 	"github.com/taerc/vpublish/internal/repository"
 	"github.com/xuri/excelize/v2"
 )
@@ -20,12 +21,14 @@ var (
 // ErrorReportService 报错记录服务
 type ErrorReportService struct {
 	recordRepo *repository.ErrorRecordRepository
+	queue      *queue.ErrorQueue // 错误队列
 }
 
 // NewErrorReportService 创建报错记录服务
-func NewErrorReportService(recordRepo *repository.ErrorRecordRepository) *ErrorReportService {
+func NewErrorReportService(recordRepo *repository.ErrorRecordRepository, q *queue.ErrorQueue) *ErrorReportService {
 	return &ErrorReportService{
 		recordRepo: recordRepo,
+		queue:      q,
 	}
 }
 
@@ -35,6 +38,7 @@ type ErrorReportRequest struct {
 	Timestamp     int64                  `json:"timestamp" binding:"required"`
 	Module        string                 `json:"module"`
 	AppType       string                 `json:"app_type"`
+	Path          string                 `json:"path" binding:"required"`
 	Code          string                 `json:"code" binding:"required"`
 	ErrorMessage  string                 `json:"error_message" binding:"required"`
 	ErrorType     string                 `json:"error_type"`
@@ -49,6 +53,7 @@ func (s *ErrorReportService) Report(ctx context.Context, req *ErrorReportRequest
 		Timestamp:     req.Timestamp,
 		Module:        req.Module,
 		AppType:       req.AppType,
+		Path:          req.Path,
 		Code:          req.Code,
 		ErrorMessage:  req.ErrorMessage,
 		RequestParams: req.RequestParams,
@@ -62,6 +67,15 @@ func (s *ErrorReportService) Report(ctx context.Context, req *ErrorReportRequest
 		record.ErrorType = s.detectErrorType(req.Code, req.ErrorMessage)
 	}
 
+	// 放入队列而不是直接写入数据库
+	if s.queue != nil {
+		if !s.queue.Push(record) {
+			return nil, errors.New("queue is full, request rejected")
+		}
+		return record, nil
+	}
+
+	// 如果队列未初始化，直接写入数据库（降级处理）
 	if err := s.recordRepo.Create(ctx, record); err != nil {
 		return nil, err
 	}
@@ -73,6 +87,7 @@ func (s *ErrorReportService) Report(ctx context.Context, req *ErrorReportRequest
 func (s *ErrorReportService) BatchReport(ctx context.Context, reqs []*ErrorReportRequest) (int, int, []uint, error) {
 	var records []*model.ErrorRecord
 	var successCount int
+	var failedCount int
 	var recordIDs []uint
 
 	for _, req := range reqs {
@@ -81,6 +96,7 @@ func (s *ErrorReportService) BatchReport(ctx context.Context, reqs []*ErrorRepor
 			Timestamp:     req.Timestamp,
 			Module:        req.Module,
 			AppType:       req.AppType,
+			Path:          req.Path,
 			Code:          req.Code,
 			ErrorMessage:  req.ErrorMessage,
 			RequestParams: req.RequestParams,
@@ -97,16 +113,34 @@ func (s *ErrorReportService) BatchReport(ctx context.Context, reqs []*ErrorRepor
 		records = append(records, record)
 	}
 
-	if err := s.recordRepo.CreateBatch(ctx, records); err != nil {
-		return 0, len(reqs), nil, err
+	// 使用队列或直接写入数据库
+	if s.queue != nil {
+		// 推入队列
+		for _, record := range records {
+			if s.queue.Push(record) {
+				successCount++
+				// 注意：队列中的记录还没有分配 ID，所以这里先返回临时 ID
+				recordIDs = append(recordIDs, 0)
+			} else {
+				failedCount++
+			}
+		}
+		return successCount, failedCount, recordIDs, nil
 	}
 
-	for _, record := range records {
-		successCount++
-		recordIDs = append(recordIDs, record.ID)
+	// 如果队列未初始化，直接写入数据库（降级处理）
+	if len(records) > 0 {
+		if err := s.recordRepo.CreateBatch(ctx, records); err != nil {
+			return 0, len(reqs), nil, err
+		}
+
+		for _, record := range records {
+			successCount++
+			recordIDs = append(recordIDs, record.ID)
+		}
 	}
 
-	return successCount, 0, recordIDs, nil
+	return successCount, failedCount, recordIDs, nil
 }
 
 // detectErrorType 智能识别报错类型

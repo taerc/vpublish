@@ -5004,7 +5004,7 @@
                     "example": "已处理"
                 },
                 "request_id": {
-                    "description": "接口请求唯一标识",
+                    "description": "接口请求唯一标识（唯一索引，不允许重复）",
                     "type": "string",
                     "example": "req-20260330-001"
                 },

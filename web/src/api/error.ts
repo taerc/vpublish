@@ -19,12 +19,13 @@ export interface ErrorRecord {
   timestamp: number
   module: string
   app_type: string       // app/platform
+  path: string           // 接口路径
   code: string           // 错误码
   error_message: string  // 报错信息
   error_type: string     // system_error/business_error
   remark?: string        // 备注
-  created_at: string
-  updated_at: string
+  created_at: number     // 创建时间（毫秒时间戳）
+  updated_at: number     // 更新时间（毫秒时间戳）
 }
 
 // 报错记录详情
@@ -43,6 +44,7 @@ export interface ErrorReportRequest {
   error_type?: string
   request_params?: Record<string, any>
   device_info: DeviceInfo
+  path: string          // 接口路径
 }
 
 // 批量上报请求
@@ -53,7 +55,7 @@ export interface BatchErrorReportRequest {
 // 报错查询参数
 export interface ErrorQueryParams {
   page?: number
-  size?: number
+  page_size?: number
   start_time?: number
   end_time?: number
   app_type?: string

@@ -126,6 +126,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="module" label="报错模块" width="120" />
+        <el-table-column prop="path" label="接口路径" min-width="200" show-overflow-tooltip />
         <el-table-column prop="error_type" label="报错类型" width="120">
           <template #default="{ row }">
             <el-tag :type="row.error_type === 'system_error' ? 'danger' : 'info'" size="small">
@@ -183,6 +184,9 @@
           </el-descriptions-item>
           <el-descriptions-item label="报错模块">
             {{ currentDetail.module || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="接口路径" :span="2">
+            <el-text type="primary">{{ currentDetail.path }}</el-text>
           </el-descriptions-item>
           <el-descriptions-item label="报错类型">
             <el-tag :type="currentDetail.error_type === 'system_error' ? 'danger' : 'info'" size="small">
@@ -283,7 +287,7 @@ async function loadData() {
   try {
     const params: ErrorQueryParams = {
       page: pagination.page,
-      size: pagination.size,
+      page_size: pagination.size,
     }
 
     if (dateRange.value) {

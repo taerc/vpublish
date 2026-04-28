@@ -36,3 +36,16 @@ mcp:
   auth:
     app_key: "xQLnrFGofvCEVTWVBcSZWSgVjZO02Mai"            # MCP App Key (可通过环境变量 MCP_APP_KEY 设置)
     app_secret: "08b18394023e170bde87eacb155256fc5c59d6fd00013bf1e0845543e9e1f748"         # MCP App Secret (可通过环境变量 MCP_APP_SECRET 设置)
+
+# 错误队列配置
+error_queue:
+  enabled: true           # 是否启用队列
+  queue_size: 10000       # 队列大小（最多缓存多少条报错记录）
+  batch_size: 100         # 批量写入大小（每次批量写入多少条）
+  flush_interval: 5s      # 刷新间隔（每隔多少秒刷新一次）
+
+# 限流配置
+rate_limit:
+  enabled: true           # 是否启用限流
+  requests_per_second: 50 # 每秒最多请求数
+  burst: 100              # 突发最大请求数
