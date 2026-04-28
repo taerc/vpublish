@@ -70,16 +70,13 @@ func (r *StatsRepository) GetCategoryStats(ctx context.Context, startDate, endDa
 	return results, err
 }
 
-// UpsertDownloadStat 创建或更新下载统计
+// UpsertDownloadStat 创建或更新下载统计（原子 upsert）
 func (r *StatsRepository) UpsertDownloadStat(ctx context.Context, stat *model.DownloadStat) error {
-	return r.db.WithContext(ctx).
-		Assign(map[string]interface{}{
-			"download_count": gorm.Expr("download_count + ?", stat.DownloadCount),
-		}).
-		FirstOrCreate(stat, model.DownloadStat{
-			VersionID: stat.VersionID,
-			StatDate:  stat.StatDate,
-		}).Error
+	return r.db.WithContext(ctx).Exec(
+		"INSERT INTO `download_stats` (`version_id`,`category_id`,`stat_date`,`download_count`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE `download_count` = `download_count` + ?, `updated_at` = ?",
+		stat.VersionID, stat.CategoryID, stat.StatDate, stat.DownloadCount, stat.CreatedAt, stat.UpdatedAt,
+		stat.DownloadCount, stat.UpdatedAt,
+	).Error
 }
 
 // GetDailyStats 获取每日统计

@@ -81,7 +81,7 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleDownload(row)">下载</el-button>
+            <el-button link type="primary" @click="handleDownload(row)" :loading="downloadingId === row.id" :disabled="downloadingId !== null">{{ downloadingId === row.id ? '下载中' : '下载' }}</el-button>
             <el-button link type="primary" @click="handleViewDetail(row)">详情</el-button>
             <el-button link type="danger" @click="handleDeleteVersion(row)">删除</el-button>
           </template>
@@ -184,6 +184,7 @@ const loading = ref(false)
 const uploadLoading = ref(false)
 const uploadDialogVisible = ref(false)
 const detailDialogVisible = ref(false)
+const downloadingId = ref<number | null>(null)
 const packageInfo = ref<Package>()
 const versions = ref<Version[]>([])
 const currentVersion = ref<Version>()
@@ -261,11 +262,14 @@ function handleViewDetail(row: Version) {
 }
 
 async function handleDownload(row: Version) {
+  downloadingId.value = row.id
   try {
     await packageApi.downloadVersion(row.id, row.file_name)
     ElMessage.success('下载完成')
   } catch (error: any) {
     ElMessage.error(error.message || '下载失败')
+  } finally {
+    downloadingId.value = null
   }
 }
 

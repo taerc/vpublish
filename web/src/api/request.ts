@@ -119,7 +119,7 @@ export async function downloadFile(url: string, filename?: string): Promise<void
   }
   
   // 创建下载链接
-  const blob = new Blob([response as any])
+  const blob = new Blob([response.data])
   const blobUrl = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = blobUrl
