@@ -55,6 +55,7 @@ package: build
 	# 复制部署文件 (systemd service + 安装脚本 + nginx配置)
 	cp -r deploy $(DIST_DIR)/$(PACKAGE_NAME)/
 	chmod +x $(DIST_DIR)/$(PACKAGE_NAME)/deploy/install.sh
+	chmod +x $(DIST_DIR)/$(PACKAGE_NAME)/deploy/upgrade.sh
 	
 	# 复制说明文档
 	cp README.md $(DIST_DIR)/$(PACKAGE_NAME)/ 2>/dev/null || true

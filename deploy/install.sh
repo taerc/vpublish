@@ -70,10 +70,11 @@ copy_files() {
 
     # 复制配置文件模板
     if [ -f "$base_dir/configs/config.yaml.example" ]; then
-        cp "$base_dir/configs/config.yaml.example" /opt/vpublish/configs/
         if [ ! -f /opt/vpublish/configs/config.yaml ]; then
             cp "$base_dir/configs/config.yaml.example" /opt/vpublish/configs/config.yaml
             log_info "配置文件已创建 (请修改 /opt/vpublish/configs/config.yaml)"
+        else
+            log_info "配置文件已存在，跳过"
         fi
     fi
 
