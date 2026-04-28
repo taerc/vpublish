@@ -42,6 +42,16 @@
           {{ row.category?.name }}
         </template>
       </el-table-column>
+      <el-table-column label="功能类型" width="100">
+        <template #default="{ row }">
+          <template v-if="row.latest_version?.feature_type">
+            <el-tag :type="featureTypeTagType(row.latest_version.feature_type)" size="small">
+              {{ featureTypeLabel(row.latest_version.feature_type) }}
+            </el-tag>
+          </template>
+          <span v-else style="color: #999;">-</span>
+        </template>
+      </el-table-column>
       <el-table-column label="文件大小" width="100">
         <template #default="{ row }">
           {{ row.latest_version ? formatFileSize(row.latest_version.file_size) : '-' }}
@@ -169,6 +179,16 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules, type Upload
 import { packageApi, type Package } from '@/api/package'
 import { categoryApi, type Category } from '@/api/category'
 import { formatDate, formatFileSize } from '@/utils'
+
+const featureTypeTagType = (type: string): 'info' | 'success' | 'warning' => {
+  const map: Record<string, 'info' | 'success' | 'warning'> = { debug: 'info', release: 'success', demo: 'warning' }
+  return map[type] || 'info'
+}
+
+const featureTypeLabel = (type: string): string => {
+  const map: Record<string, string> = { debug: '调试', release: '正式', demo: '演示' }
+  return map[type] || type || '-'
+}
 
 const router = useRouter()
 const loading = ref(false)
